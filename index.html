@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PERKESO Mystery Shopper — Project Monitoring Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css">
+<script id="theme-init">
+try{
+  document.documentElement.dataset.theme = localStorage.getItem('perkeso-theme') === 'dark' ? 'dark' : 'light';
+}catch(e){
+  document.documentElement.dataset.theme = 'light';
+}
+</script>
+<style>
+:root{
+  --blue-900:#0B2A4A;
+  --blue-700:#123E6B;
+  --blue-600:#1B4F91;
+  --blue-500:#2E6DB4;
+  --blue-100:#E7EEF7;
+  --blue-50:#F2F6FB;
+  --grey-900:#1A2233;
+  --grey-600:#5B6472;
+  --grey-400:#8A93A3;
+  --grey-200:#E4E8EE;
+  --grey-100:#F0F2F5;
+  --grey-50:#F7F8FA;
+  --white:#FFFFFF;
+  --green:#16A34A;
+  --green-bg:#E7F6EC;
+  --amber:#D97706;
+  --amber-bg:#FDF1DD;
+  --red:#DC2626;
+  --red-bg:#FCE8E8;
+  --radius-lg:18px;
+  --radius-md:12px;
+  --radius-sm:8px;
+  --shadow-sm: 0 1px 2px rgba(16,36,64,0.06);
+  --shadow-md: 0 6px 20px rgba(16,36,64,0.08);
+  --shadow-lg: 0 16px 40px rgba(16,36,64,0.12);
+  --font-display:'Manrope', sans-serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'IBM Plex Mono', monospace;
+}
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --blue-700:#8DBCF8;
+  --blue-600:#69A7F5;
+  --blue-500:#4F8FDE;
+  --blue-100:#253B5C;
+  --blue-50:#17253A;
+  --grey-900:#F2F6FC;
+  --grey-600:#C5CEDC;
+  --grey-400:#94A3B8;
+  --grey-200:#2A374D;
+  --grey-100:#202C40;
+  --grey-50:#0C1422;
+  --white:#131E2F;
+  --green:#4ADE80;
+  --green-bg:#123322;
+  --amber:#F5AD42;
+  --amber-bg:#3A2811;
+  --red:#F87171;
+  --red-bg:#3C1F24;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.25);
+  --shadow-md:0 8px 24px rgba(0,0,0,.3);
+  --shadow-lg:0 18px 45px rgba(0,0,0,.38);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font-body);
+  background:var(--grey-50);
+  color:var(--grey-900);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+body,.panel,.filterbar,.kpi-card,.map-side .mini-stat,.ft-row,
+.filterbar select,.filterbar input[type=date],.search-box,.table-scroll,
+.outlet-table thead th,.pg-btn{
+  transition:background-color .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease;
+}
+::selection{background:var(--blue-100);}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.ph,.ph-duotone{line-height:1;}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:var(--blue-900);
+  color:#fff;
+  padding:0 28px;
+  display:flex; align-items:center; justify-content:space-between;
+  height:64px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.18);
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-mark{
+  width:44px;height:44px;
+  display:flex;align-items:center;justify-content:center;
+}
+.brand-mark img{display:block;width:100%;height:100%;object-fit:contain;}
+.brand-text{display:flex;flex-direction:column;line-height:1.15;}
+.brand-text .t1{font-family:var(--font-display);font-weight:700;font-size:14.5px;letter-spacing:0.2px;}
+.brand-text .t2{font-size:11.5px;color:#B9C6DA;font-weight:500;}
+.topbar-right{display:flex;align-items:center;gap:18px;}
+.env-pill{
+  font-size:11px; font-weight:600; letter-spacing:0.4px; text-transform:uppercase;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16);
+  padding:5px 10px; border-radius:20px; color:#D6E2F2;
+}
+.updated-pill{
+  display:flex; align-items:center; gap:7px;
+  font-size:12.5px; color:#CBD8EA;
+}
+.theme-toggle{
+  width:34px;height:34px;border-radius:9px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08);color:#E8F0FB;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;font-size:18px;
+  transition:background .15s ease,transform .15s ease,border-color .15s ease;
+}
+.theme-toggle:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.28);}
+.theme-toggle:active{transform:scale(.94);}
+.theme-toggle:focus-visible{outline:2px solid #8DBCF8;outline-offset:2px;}
+.dot-live{width:7px;height:7px;border-radius:50%;background:#3ECF7E;box-shadow:0 0 0 3px rgba(62,207,126,0.25);}
+.avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--blue-500); color:#fff; font-weight:700; font-size:12.5px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);
+}
+html[data-theme="dark"] .topbar{background:#081A2E;}
+html[data-theme="dark"] .filterbar select,
+html[data-theme="dark"] .filterbar input[type=date],
+html[data-theme="dark"] .search-box input{color-scheme:dark;}
+html[data-theme="dark"] .mapstate{stroke:#D7E0EC;}
+html[data-theme="dark"] .state-row:hover,
+html[data-theme="dark"] .outlet-table tbody tr:hover{background:#182A43;}
+
+/* ---------- Page shell ---------- */
+.shell{max-width:1560px;margin:0 auto;padding:22px 28px 60px;}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;gap:14px;}
+.page-head h1{font-family:var(--font-display);font-size:22px;font-weight:800;margin:0 0 4px;color:var(--grey-900);}
+.page-head p{margin:0;color:var(--grey-600);font-size:13.5px;}
+.breadcrumb{font-size:12px;color:var(--grey-400);font-weight:600;letter-spacing:.3px;text-transform:uppercase;margin-bottom:6px;}
+
+/* ---------- Filter bar ---------- */
+.filterbar{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  background:var(--white); border:1px solid var(--grey-200);
+  padding:12px 14px; border-radius:var(--radius-md); box-shadow:var(--shadow-sm);
+}
+.filterbar .flabel{font-size:11.5px;font-weight:700;color:var(--grey-400);text-transform:uppercase;letter-spacing:.4px;margin-right:2px;}
+.filterbar select, .filterbar input[type=date]{
+  border:1px solid var(--grey-200); background:var(--grey-50);
+  padding:8px 10px; border-radius:var(--radius-sm); font-size:13px; color:var(--grey-900);
+  font-family:inherit; min-width:140px; cursor:pointer;
+}
+.filterbar select:focus, .filterbar input:focus{outline:2px solid var(--blue-500); outline-offset:1px;}
+.date-range{display:flex;align-items:center;gap:6px;}
+.date-range span{color:var(--grey-400);font-size:12px;}
+.reset-btn{
+  margin-left:auto; background:var(--blue-50); color:var(--blue-600); border:1px solid var(--blue-100);
+  padding:8px 14px; border-radius:var(--radius-sm); font-size:12.5px; font-weight:700; cursor:pointer;
+  display:flex;align-items:center;gap:6px; transition:.15s;
+}
+.reset-btn:hover{background:var(--blue-100);}
+.active-filter-chip{
+  display:flex; align-items:center; gap:6px;
+  background:var(--blue-600); color:#fff; font-size:12px; font-weight:600;
+  padding:6px 10px 6px 12px; border-radius:20px;
+}
+.active-filter-chip button{background:rgba(255,255,255,0.2);border:none;color:#fff;width:16px;height:16px;border-radius:50%;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;}
+
+/* ---------- KPI cards ---------- */
+.kpi-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin:20px 0;}
+.kpi-card{
+  background:var(--white); border:1px solid var(--grey-200); border-radius:var(--radius-lg);
+  padding:18px 18px 16px; box-shadow:var(--shadow-sm); position:relative; overflow:hidden;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.kpi-card:hover{transform:translateY(-2px); box-shadow:var(--shadow-md);}
+.kpi-top{display:flex; justify-content:space-between; align-items:flex-start;}
+.kpi-icon{
+  width:36px;height:36px;border-radius:10px; display:flex;align-items:center;justify-content:center;
+  background:var(--blue-50); color:var(--blue-600);
+}
+.kpi-icon i{font-size:20px;}
+.kpi-trend{font-size:11px;font-weight:700;padding:3px 7px;border-radius:20px;}
+.trend-up{background:var(--green-bg);color:var(--green);}
+.trend-flat{background:var(--grey-100);color:var(--grey-600);}
+.kpi-value{font-family:var(--font-display); font-size:30px; font-weight:800; margin-top:14px; letter-spacing:-0.5px; color:var(--grey-900);}
+.kpi-value .unit{font-size:15px;color:var(--grey-400);font-weight:600;margin-left:2px;}
+.kpi-label{font-size:12.5px; color:var(--grey-600); margin-top:3px; font-weight:500;}
+.kpi-sub{font-size:11.5px;color:var(--grey-400);margin-top:8px;}
+.kpi-progress-track{height:5px;background:var(--grey-100);border-radius:6px;margin-top:10px;overflow:hidden;}
+.kpi-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue-500),var(--blue-600));border-radius:6px;transition:width .5s ease;}
+
+/* ---------- Panels ---------- */
+.panel{
+  background:var(--white); border:1px solid var(--grey-200); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm); overflow:hidden;
+}
+.panel-head{
+  padding:16px 20px; border-bottom:1px solid var(--grey-100);
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+}
+.panel-head h2{font-family:var(--font-display); font-size:15px; font-weight:700; margin:0; color:var(--grey-900); display:flex; align-items:center; gap:9px;}
+.panel-head h2 > i{
+  width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--blue-50);color:var(--blue-600);font-size:17px;border:1px solid var(--blue-100);
+}
+.panel-head .sub{font-size:12px;color:var(--grey-400);font-weight:500;margin-top:2px;}
+.panel-head-left{display:flex;flex-direction:column;}
+.legend{display:flex;gap:14px;align-items:center;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--grey-600);font-weight:500;}
+.legend-dot{width:9px;height:9px;border-radius:3px;}
+.panel-body{padding:18px 20px;}
+
+.row-2col{display:grid; grid-template-columns:1.5fr 1fr; gap:16px; margin-top:16px; align-items:start;}
+.row-2col-b{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;}
+
+/* ---------- Map ---------- */
+.map-wrap{display:flex; flex-direction:column; gap:16px;}
+.map-svg-holder{width:100%; min-width:0; position:relative;}
+#myMap{display:block;width:100%;height:auto;}
+.mapstate{cursor:pointer; stroke:#fff; stroke-width:1.3; transition:filter .15s ease, opacity .2s;}
+.mapstate:hover{filter:brightness(0.92);}
+.mapstate.dimmed{opacity:0.22;}
+.mapstate.active-state{stroke:var(--blue-900); stroke-width:2.4;}
+.map-note{font-size:11px; color:var(--grey-400); text-align:center; margin-top:6px; font-style:italic;}
+.map-tooltip{
+  position:absolute; background:var(--blue-900); color:#fff; font-size:12px; padding:9px 12px; border-radius:9px;
+  pointer-events:none; opacity:0; transition:opacity .1s; box-shadow:var(--shadow-md); z-index:20; line-height:1.55; white-space:nowrap;
+}
+.map-tooltip b{font-family:var(--font-display); font-size:12.5px;}
+.map-side{width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;}
+.map-side .mini-stat{background:var(--grey-50); border:1px solid var(--grey-200); border-radius:var(--radius-md); padding:12px 14px;}
+.map-side .mini-stat .n{font-family:var(--font-display); font-size:20px; font-weight:800;}
+.map-side .mini-stat .l{font-size:11.5px; color:var(--grey-600); margin-top:2px;}
+.ft-callout-title{grid-column:1/-1;font-size:11px; font-weight:700; color:var(--grey-400); text-transform:uppercase; letter-spacing:.4px; margin:2px 0 2px;}
+.ft-row{
+  display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:9px; cursor:pointer; border:1px solid var(--grey-200);
+  background:var(--white); transition:background .12s;
+}
+.ft-row:hover{background:var(--blue-50);}
+.ft-row.active-row{background:var(--blue-100); border-color:var(--blue-500);}
+.ft-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+.ft-row .ftn{font-size:11.5px;font-weight:600;flex:1;}
+.ft-row .ftp{font-size:11px;font-weight:700;font-family:var(--font-mono);}
+
+/* ---------- Progress by state ---------- */
+.state-row{
+  display:grid; grid-template-columns:120px 1fr 60px 70px 70px 70px;
+  align-items:center; gap:10px; padding:9px 4px; border-bottom:1px solid var(--grey-100); cursor:pointer;
+  border-radius:8px; transition:background .12s; min-height:44px;
+}
+#state-progress-list{
+  max-height:440px;
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:var(--grey-400) transparent;
+  scrollbar-gutter:stable;
+  padding-right:4px;
+}
+#state-progress-list::-webkit-scrollbar{width:6px;}
+#state-progress-list::-webkit-scrollbar-track{background:transparent;}
+#state-progress-list::-webkit-scrollbar-thumb{background:var(--grey-400);border-radius:10px;}
+#state-progress-list::-webkit-scrollbar-thumb:hover{background:var(--grey-600);}
+.state-row:hover{background:var(--blue-50);}
+.state-row.active-row{background:var(--blue-100);}
+.state-row:last-child{border-bottom:none;}
+.state-row .sname{font-size:13px;font-weight:600;color:var(--grey-900);}
+.state-row .num{font-size:12.5px;color:var(--grey-600);text-align:center;font-family:var(--font-mono);}
+.state-row .pctnum{font-size:12.5px;font-weight:700;text-align:right;font-family:var(--font-mono);}
+.bar-track{height:8px;background:var(--grey-100);border-radius:6px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;transition:width .5s ease;}
+.header-row{display:grid; grid-template-columns:120px 1fr 60px 70px 70px 70px; gap:10px; padding:0 4px 8px; font-size:10.5px; font-weight:700; color:var(--grey-400); text-transform:uppercase; letter-spacing:.4px;}
+.header-row span:not(:first-child){text-align:center;}
+.header-row span:last-child{text-align:right;}
+.state-sort{cursor:pointer;user-select:none;border-radius:5px;transition:color .15s ease,background .15s ease;outline:none;}
+.state-sort:hover,.state-sort:focus-visible{color:var(--blue-600);background:var(--blue-50);}
+.state-sort.active{color:var(--blue-700);}
+.state-sort-indicator{display:inline-block;min-width:9px;margin-left:2px;font-size:10px;vertical-align:-1px;text-transform:none;}
+
+/* ---------- Timeline ---------- */
+.timeline-legend{display:flex;gap:16px;margin-bottom:6px;}
+#timelineChart{width:100%; height:230px; display:block;}
+.tl-tooltip{position:absolute; background:var(--blue-900); color:#fff; font-size:11.5px; padding:8px 10px; border-radius:8px; pointer-events:none; opacity:0; transition:opacity .1s; box-shadow:var(--shadow-md); z-index:10; line-height:1.5;}
+
+/* ---------- Table ---------- */
+.table-toolbar{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
+.search-box{
+  display:flex; align-items:center; gap:8px; background:var(--grey-50); border:1px solid var(--grey-200);
+  border-radius:var(--radius-sm); padding:8px 12px; flex:1; min-width:220px; max-width:340px;
+}
+.search-box > i{font-size:16px;color:var(--grey-400);flex-shrink:0;}
+.search-box input{border:none;background:transparent;outline:none;font-size:13px;width:100%;font-family:inherit;}
+.table-count{font-size:12.5px;color:var(--grey-600); margin-left:auto;}
+.table-scroll{overflow-x:auto; border:1px solid var(--grey-100); border-radius:var(--radius-md);}
+table.outlet-table{width:100%; border-collapse:collapse; font-size:13px; min-width:1280px;}
+.outlet-table thead th{
+  background:var(--grey-50); text-align:left; padding:10px 14px; font-size:11px; font-weight:700;
+  color:var(--grey-600); text-transform:uppercase; letter-spacing:.3px; border-bottom:1px solid var(--grey-200);
+  cursor:pointer; user-select:none; white-space:nowrap; position:sticky; top:0;
+}
+.outlet-table thead th:hover{color:var(--blue-600);}
+.outlet-table thead th .arrow{font-size:10px; margin-left:3px; opacity:0.5;}
+.outlet-table thead th.sorted .arrow{opacity:1; color:var(--blue-600);}
+.outlet-table tbody td{padding:11px 14px; border-bottom:1px solid var(--grey-100); color:var(--grey-900); white-space:nowrap;}
+.outlet-table tbody td.address-cell{min-width:340px;max-width:440px;white-space:normal;line-height:1.45;color:var(--grey-600);}
+.outlet-table tbody tr:hover{background:var(--blue-50);}
+.outlet-table tbody tr:last-child td{border-bottom:none;}
+.badge{display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700;}
+.badge-completed{background:var(--green-bg); color:var(--green);}
+.badge-inprogress{background:var(--amber-bg); color:var(--amber);}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.evd-yes{color:var(--green); font-weight:700; display:flex; align-items:center; gap:4px;}
+.evd-no{color:var(--grey-400); font-weight:600; display:flex; align-items:center; gap:4px;}
+.mini-bar-track{width:60px; height:6px; background:var(--grey-100); border-radius:6px; display:inline-block; vertical-align:middle; overflow:hidden; margin-right:8px;}
+.mini-bar-fill{height:100%; border-radius:6px;}
+.pagination{display:flex; align-items:center; justify-content:space-between; margin-top:12px; font-size:12.5px; color:var(--grey-600);}
+.pagination .pg-btns{display:flex; gap:6px;}
+.pg-btn{border:1px solid var(--grey-200); background:var(--white); padding:6px 11px; border-radius:var(--radius-sm); cursor:pointer; font-size:12.5px; font-weight:600; color:var(--grey-600);display:inline-flex;align-items:center;gap:5px;}
+.pg-btn:disabled{opacity:0.4; cursor:not-allowed;}
+.pg-btn:not(:disabled):hover{border-color:var(--blue-500); color:var(--blue-600);}
+
+/* ---------- Activities ---------- */
+.activity-item{display:flex; gap:12px; padding:11px 2px; border-bottom:1px solid var(--grey-100);}
+.activity-item:last-child{border-bottom:none;}
+.act-icon{width:32px;height:32px;border-radius:9px; flex-shrink:0; display:flex;align-items:center;justify-content:center;}
+.act-icon i{font-size:17px;}
+.act-body{flex:1; min-width:0;}
+.act-title{font-size:13px; font-weight:600; color:var(--grey-900);}
+.act-title b{font-weight:700; color:var(--blue-600);}
+.act-meta{font-size:11.5px; color:var(--grey-400); margin-top:2px;}
+.act-time{font-size:11px; color:var(--grey-400); white-space:nowrap; font-family:var(--font-mono);}
+
+.empty-state{padding:40px 20px; text-align:center; color:var(--grey-400);}
+.empty-state > i{display:block;font-size:40px;margin-bottom:10px;opacity:.5;}
+.evd-yes i,.evd-no i{font-size:14px;}
+.empty-state p{margin:0;font-size:13px;font-weight:500;}
+
+footer.pagefoot{text-align:center; color:var(--grey-400); font-size:11.5px; margin-top:28px; padding-top:18px; border-top:1px solid var(--grey-200);}
+
+@media (max-width:1300px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr);}
+  .row-2col, .row-2col-b{grid-template-columns:1fr;}
+}
+@media (max-width:640px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .shell{padding:16px 14px 40px;}
+  .topbar{padding:0 14px;}
+  .topbar-right{gap:8px;}
+  .topbar-right .env-pill,.topbar-right .updated-pill{display:none;}
+  .map-side{grid-template-columns:1fr;}
+  .header-row, .state-row{grid-template-columns:90px 1fr 40px 50px;}
+  .header-row span:nth-child(4), .header-row span:nth-child(5),
+  .state-row .num:nth-of-type(2), .state-row .num:nth-of-type(3){display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark"><img src="data:image/png;base64,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" alt="PERKESO logo"></div>
+    <div class="brand-text">
+      <span class="t1">PERKESO Mystery Shopper</span>
+      <span class="t2">Nationwide Project Monitoring Dashboard</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="env-pill">Internal — Project Team</span>
+    <span class="updated-pill"><span class="dot-live"></span> Live data feed</span>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode">
+      <i class="ph ph-moon"></i>
+    </button>
+    <div class="avatar">CT</div>
+  </div>
+</div>
+
+<div class="shell">
+
+  <div class="page-head">
+    <div>
+      <div class="breadcrumb">Project Steering Committee View</div>
+      <h1>Executive Project Overview</h1>
+      <p>Implementation progress of five Mystery Shopper visits across 54 listed PERKESO outlets nationwide.</p>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filterbar" id="filterbar">
+    <span class="flabel">State</span>
+    <select id="f-state"></select>
+
+    <span class="flabel">Outlet</span>
+    <select id="f-outlet"></select>
+
+    <span class="flabel">Status</span>
+    <select id="f-status">
+      <option value="all">All statuses</option>
+      <option value="Completed">Completed</option>
+      <option value="In Progress">In Progress</option>
+    </select>
+
+    <span class="flabel">Date range</span>
+    <div class="date-range">
+      <input type="date" id="f-date-from">
+      <span>to</span>
+      <input type="date" id="f-date-to">
+    </div>
+
+    <button class="reset-btn" id="reset-filters"><i class="ph ph-arrows-counter-clockwise"></i><span>Reset filters</span></button>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid" id="kpi-grid"></div>
+
+  <!-- MAP + STATE PROGRESS -->
+  <div class="row-2col">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-head-left">
+          <h2><i class="ph-duotone ph-map-trifold"></i>Nationwide Coverage Map</h2>
+          <span class="sub">Click a state to filter the entire dashboard</span>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Completed</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>In progress</div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="map-wrap">
+          <div class="map-svg-holder">
+            <svg id="myMap" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div class="map-tooltip" id="map-tooltip"></div>
+            <div class="map-note">Peninsular Malaysia (left) &amp; East Malaysia — Sabah, Sarawak, Labuan (right). Actual state boundaries.</div>
+          </div>
+          <div class="map-side" id="map-side"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-head-left">
+          <h2><i class="ph-duotone ph-chart-bar"></i>Progress by State</h2>
+          <span class="sub" id="state-sort-description">Sorted by lowest completion first · Click a heading to sort</span>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="header-row">
+          <span class="state-sort" data-state-sort="name" role="button" tabindex="0">State <i class="ph ph-caret-up-down state-sort-indicator"></i></span>
+          <span class="state-sort active" data-state-sort="pct" role="button" tabindex="0" style="text-align:left">Progress <i class="ph ph-caret-up state-sort-indicator"></i></span>
+          <span class="state-sort" data-state-sort="total" role="button" tabindex="0">Outlets <i class="ph ph-caret-up-down state-sort-indicator"></i></span>
+          <span class="state-sort" data-state-sort="completed" role="button" tabindex="0">Visits Done <i class="ph ph-caret-up-down state-sort-indicator"></i></span>
+          <span class="state-sort" data-state-sort="remaining" role="button" tabindex="0">Visits Left <i class="ph ph-caret-up-down state-sort-indicator"></i></span>
+          <span class="state-sort" data-state-sort="pct" role="button" tabindex="0">% <i class="ph ph-caret-up state-sort-indicator"></i></span>
+        </div>
+        <div id="state-progress-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTLET TRACKER -->
+  <div class="panel" style="margin-top:16px;">
+    <div class="panel-head">
+      <div class="panel-head-left">
+        <h2><i class="ph-duotone ph-buildings"></i>Outlet Tracker</h2>
+        <span class="sub">Official 54-outlet directory with illustrative project monitoring data</span>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="table-toolbar">
+        <div class="search-box">
+          <i class="ph ph-magnifying-glass"></i>
+          <input type="text" id="table-search" placeholder="Search outlet name, address or state…">
+        </div>
+        <span class="table-count" id="table-count"></span>
+      </div>
+      <div class="table-scroll">
+        <table class="outlet-table">
+          <thead>
+            <tr>
+              <th data-key="name">Outlet Name <i class="ph ph-caret-up-down arrow"></i></th>
+              <th data-key="address">Address <i class="ph ph-caret-up-down arrow"></i></th>
+              <th data-key="state">State <i class="ph ph-caret-up-down arrow"></i></th>
+              <th data-key="date">Next / Last Visit <i class="ph ph-caret-up-down arrow"></i></th>
+              <th data-key="status">Status <i class="ph ph-caret-up-down arrow"></i></th>
+              <th data-key="completedVisits">Visits <i class="ph ph-caret-up-down arrow"></i></th>
+              <th data-key="pct">Completion % <i class="ph ph-caret-up-down arrow"></i></th>
+              <th data-key="evidence">Evidence <i class="ph ph-caret-up-down arrow"></i></th>
+            </tr>
+          </thead>
+          <tbody id="outlet-tbody"></tbody>
+        </table>
+      </div>
+      <div id="table-empty" class="empty-state" style="display:none;">
+        <i class="ph-duotone ph-magnifying-glass"></i>
+        <p>No outlets match the current filters.</p>
+      </div>
+      <div class="pagination">
+        <span id="pg-info"></span>
+        <div class="pg-btns">
+          <button class="pg-btn" id="pg-prev"><i class="ph ph-arrow-left"></i>Previous</button>
+          <button class="pg-btn" id="pg-next">Next<i class="ph ph-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT ACTIVITIES -->
+  <div class="panel" style="margin-top:16px;">
+    <div class="panel-head">
+      <div class="panel-head-left">
+        <h2><i class="ph-duotone ph-clock-counter-clockwise"></i>Recent Project Activities</h2>
+        <span class="sub">Latest updates from the field team</span>
+      </div>
+    </div>
+    <div class="panel-body" id="activity-list"></div>
+  </div>
+
+  <footer class="pagefoot">PERKESO Mystery Shopper Project Monitoring Dashboard — Prototype for stakeholder presentation. Each of the 54 listed outlets is assigned five Mystery Shopper visits (270 visits in total). Visit dates, status, progress and evidence are illustrative sample data.</footer>
+
+</div>
+
+<script>
+/* =========================================================================
+   DATA MODEL
+   ========================================================================= */
+const STATES = [
+  {id:'PLS', name:'Perlis',            region:'peninsular', cities:['Kangar','Padang Besar','Arau']},
+  {id:'KDH', name:'Kedah',             region:'peninsular', cities:['Alor Setar','Sungai Petani','Kulim','Langkawi']},
+  {id:'PNG', name:'Pulau Pinang',      region:'peninsular', cities:['George Town','Bukit Mertajam','Butterworth']},
+  {id:'KEL', name:'Kelantan',          region:'peninsular', cities:['Kota Bharu','Pasir Mas','Tanah Merah']},
+  {id:'TRG', name:'Terengganu',        region:'peninsular', cities:['Kuala Terengganu','Dungun','Kemaman']},
+  {id:'PRK', name:'Perak',             region:'peninsular', cities:['Ipoh','Taiping','Teluk Intan','Sitiawan']},
+  {id:'PHG', name:'Pahang',            region:'peninsular', cities:['Kuantan','Temerloh','Bentong','Raub']},
+  {id:'SEL', name:'Selangor',          region:'peninsular', cities:['Shah Alam','Klang','Petaling Jaya','Kajang','Rawang','Sepang']},
+  {id:'KUL', name:'Kuala Lumpur',      region:'peninsular', cities:['Wangsa Maju','Cheras','KL Sentral']},
+  {id:'PJY', name:'Putrajaya',         region:'peninsular', cities:['Putrajaya Precinct 1','Putrajaya Precinct 9']},
+  {id:'NSN', name:'Negeri Sembilan',   region:'peninsular', cities:['Seremban','Port Dickson','Nilai']},
+  {id:'MLK', name:'Melaka',            region:'peninsular', cities:['Melaka Tengah','Alor Gajah','Jasin']},
+  {id:'JHR', name:'Johor',             region:'peninsular', cities:['Johor Bahru','Batu Pahat','Muar','Kluang','Segamat']},
+  {id:'SWK', name:'Sarawak',           region:'east',       cities:['Kuching','Miri','Sibu','Bintulu','Sri Aman']},
+  {id:'SBH', name:'Sabah',             region:'east',       cities:['Kota Kinabalu','Sandakan','Tawau','Lahad Datu']},
+  {id:'LBN', name:'Labuan',            region:'east',       cities:['Labuan Town']},
+];
+
+/* Real Malaysia state boundary paths, projected from geoBoundaries/OSM-derived
+   ADM1 polygons (equirectangular projection, true relative proportions). */
+const MAP_VIEWBOX = "0 0 900 320";
+const SMALL_TERRITORIES = ['KUL','PJY','LBN']; // too small to label inline on the map
+const STATE_PATHS = {"JHR":"M 132.14,211.17 L 129.15,220.29 L 129.64,221.53 L 128.52,223.66 L 127.40,229.90 L 123.91,232.53 L 122.91,237.15 L 122.91,239.15 L 122.16,240.15 L 124.28,241.27 L 124.78,243.15 L 123.03,243.65 L 122.78,244.52 L 131.89,255.40 L 133.39,254.90 L 138.00,255.65 L 140.75,257.90 L 142.49,260.52 L 146.98,261.15 L 150.98,264.02 L 156.59,267.02 L 162.58,270.89 L 165.82,279.27 L 169.07,282.40 L 169.56,280.52 L 170.56,279.65 L 171.81,278.90 L 174.80,277.40 L 175.93,276.27 L 177.55,274.02 L 179.92,274.27 L 182.16,272.90 L 185.16,273.77 L 186.78,274.90 L 190.02,275.40 L 191.52,274.02 L 191.64,271.64 L 191.77,269.89 L 190.90,268.52 L 189.77,267.02 L 190.27,266.14 L 191.15,267.52 L 192.64,269.39 L 193.27,271.89 L 193.89,272.52 L 193.14,273.40 L 194.76,274.77 L 196.01,275.77 L 195.89,277.15 L 196.88,278.65 L 199.63,279.02 L 202.12,278.27 L 203.99,277.52 L 204.49,273.90 L 203.99,270.64 L 202.75,266.39 L 202.50,265.27 L 200.88,262.65 L 198.38,255.77 L 196.88,255.65 L 196.14,253.52 L 196.39,252.52 L 197.26,252.27 L 190.02,240.40 L 189.40,238.15 L 190.52,237.53 L 189.27,234.78 L 186.53,232.40 L 183.41,226.78 L 183.54,224.03 L 180.29,220.29 L 175.68,218.91 L 174.30,218.66 L 173.18,224.53 L 174.30,224.91 L 174.80,226.78 L 173.56,228.03 L 166.20,224.03 L 161.46,222.16 L 159.96,222.66 L 152.85,225.16 L 144.86,222.28 L 137.50,213.29 L 132.14,211.17 Z","MLK":"M 99.33,231.22 L 99.14,231.23 L 99.13,231.50 L 99.16,231.76 L 99.25,232.03 L 99.84,232.15 L 100.23,232.33 L 100.30,232.33 L 100.32,232.25 L 100.38,232.18 L 100.91,232.25 L 101.20,232.38 L 101.75,232.70 L 102.32,233.15 L 103.35,233.65 L 104.04,235.46 L 104.45,235.71 L 104.76,236.21 L 105.22,236.59 L 105.47,236.53 L 105.85,236.74 L 107.31,238.99 L 108.03,238.99 L 109.00,239.03 L 109.19,239.28 L 108.94,239.49 L 109.09,239.81 L 109.31,239.68 L 109.56,239.68 L 109.87,239.90 L 110.09,239.99 L 110.25,239.90 L 110.43,239.96 L 110.43,240.18 L 110.71,240.40 L 110.84,240.21 L 111.68,240.56 L 112.21,240.65 L 114.02,241.24 L 114.83,241.77 L 115.83,242.02 L 117.36,242.93 L 118.35,242.81 L 120.60,243.71 L 122.10,244.19 L 122.71,244.50 L 122.81,243.96 L 122.89,243.77 L 122.99,243.59 L 123.11,243.57 L 123.75,243.39 L 124.73,243.11 L 124.65,242.81 L 124.37,242.01 L 124.12,241.37 L 123.63,241.15 L 123.19,241.09 L 122.53,241.02 L 122.16,240.56 L 121.82,239.65 L 122.84,238.85 L 122.85,238.06 L 122.82,237.36 L 122.92,236.82 L 123.14,235.73 L 123.20,235.25 L 123.50,234.20 L 123.64,233.54 L 123.63,233.39 L 123.74,233.01 L 123.81,232.61 L 123.95,232.37 L 124.03,232.22 L 124.72,231.72 L 125.56,231.00 L 125.68,230.81 L 126.93,230.03 L 126.65,229.90 L 125.22,229.59 L 121.79,228.59 L 120.23,228.09 L 119.91,227.53 L 117.42,226.72 L 115.49,227.09 L 113.18,227.97 L 111.74,227.59 L 108.69,226.22 L 107.00,228.09 L 105.94,227.97 L 104.32,228.41 L 103.51,228.34 L 103.20,229.09 L 102.45,229.84 L 101.89,229.22 L 101.45,229.78 L 99.33,231.22 Z","NSN":"M 98.05,230.53 L 98.83,230.69 L 99.13,230.86 L 99.31,231.11 L 100.94,230.03 L 101.51,229.69 L 101.56,229.47 L 101.70,229.30 L 101.92,229.22 L 102.46,229.72 L 102.70,229.50 L 102.89,229.22 L 103.10,229.09 L 103.20,228.72 L 103.28,228.31 L 103.63,228.16 L 104.30,228.37 L 105.79,227.98 L 106.00,227.95 L 106.95,228.08 L 107.36,227.62 L 108.65,226.19 L 108.84,226.19 L 111.79,227.55 L 112.48,227.72 L 113.16,227.92 L 114.41,227.33 L 114.74,227.14 L 117.14,226.56 L 119.98,227.48 L 120.26,227.73 L 120.41,228.06 L 125.22,229.47 L 127.09,229.94 L 127.37,229.69 L 127.52,228.28 L 128.18,224.66 L 128.24,224.13 L 128.66,222.49 L 129.49,221.71 L 129.50,221.42 L 129.43,221.28 L 129.08,220.52 L 129.08,220.10 L 129.21,219.63 L 131.30,213.07 L 132.14,211.01 L 132.11,210.29 L 131.73,208.95 L 130.05,208.01 L 122.69,203.33 L 120.38,200.86 L 117.42,197.90 L 107.91,195.50 L 107.10,194.59 L 106.41,194.68 L 106.19,194.56 L 105.75,194.53 L 105.63,194.96 L 104.94,194.84 L 104.20,195.34 L 103.82,195.90 L 103.32,196.03 L 103.07,194.96 L 102.32,193.22 L 100.89,193.15 L 99.58,192.41 L 99.46,191.03 L 98.52,191.28 L 97.65,190.41 L 96.65,191.66 L 97.58,192.09 L 98.15,194.09 L 97.96,195.03 L 98.39,196.15 L 98.96,197.21 L 98.21,198.59 L 99.08,200.58 L 99.02,202.27 L 98.15,202.77 L 98.02,203.52 L 97.65,203.39 L 94.96,209.57 L 89.23,209.08 L 89.35,217.19 L 88.98,218.82 L 88.23,220.94 L 86.98,221.57 L 87.98,222.19 L 88.48,221.75 L 89.29,221.66 L 90.72,222.07 L 91.32,223.85 L 91.28,224.44 L 90.91,225.00 L 91.13,225.38 L 92.84,225.69 L 93.72,228.19 L 94.00,229.78 L 93.56,230.28 L 93.78,230.53 L 94.96,229.69 L 95.71,230.06 L 96.65,229.72 L 97.58,229.69 L 98.05,230.53 Z","SEL":"M 86.89,221.53 L 88.45,220.60 L 88.88,218.16 L 89.19,212.98 L 89.19,209.17 L 90.47,209.08 L 94.93,209.54 L 97.52,203.55 L 97.90,203.42 L 98.24,202.64 L 99.05,202.24 L 99.05,200.55 L 98.11,198.74 L 98.86,197.18 L 97.93,195.34 L 98.08,194.25 L 97.90,193.31 L 97.43,192.19 L 96.55,191.78 L 95.71,191.50 L 95.12,191.44 L 94.50,191.22 L 93.53,190.72 L 92.09,189.44 L 91.41,188.60 L 90.50,188.07 L 90.44,187.26 L 89.51,186.57 L 89.88,185.29 L 90.41,185.04 L 90.75,183.82 L 90.49,182.47 L 90.01,181.36 L 89.77,180.89 L 89.82,180.36 L 90.38,179.72 L 90.47,179.19 L 90.74,178.74 L 91.75,178.58 L 91.94,177.89 L 91.88,177.22 L 92.27,176.22 L 91.81,175.73 L 91.60,175.65 L 91.32,174.98 L 90.72,174.76 L 90.89,174.34 L 90.79,173.90 L 90.13,173.42 L 90.15,173.01 L 89.99,172.54 L 89.51,172.45 L 88.98,171.87 L 88.76,171.73 L 88.68,171.51 L 88.82,171.30 L 88.27,171.06 L 87.81,171.40 L 87.46,171.22 L 87.03,171.31 L 86.54,171.30 L 86.25,171.16 L 86.09,170.80 L 85.51,170.75 L 85.22,170.41 L 84.78,169.95 L 83.66,168.43 L 82.52,168.35 L 81.58,168.60 L 81.34,169.24 L 81.38,169.69 L 81.51,169.89 L 81.54,170.62 L 81.29,170.81 L 80.99,170.97 L 80.96,171.16 L 80.54,171.50 L 80.21,171.62 L 80.04,171.64 L 79.39,172.48 L 78.76,172.73 L 77.64,171.73 L 77.33,171.79 L 76.91,171.53 L 76.74,171.11 L 76.30,171.01 L 76.08,170.87 L 75.41,169.86 L 75.43,169.58 L 75.04,169.27 L 74.15,169.30 L 73.91,168.94 L 73.43,168.72 L 73.06,168.43 L 72.73,168.25 L 72.49,167.57 L 72.12,167.08 L 71.50,166.94 L 70.89,167.21 L 70.39,167.46 L 69.94,167.99 L 70.08,168.55 L 70.33,169.21 L 70.79,170.97 L 70.89,171.33 L 70.59,172.08 L 69.69,172.25 L 68.92,172.93 L 68.31,172.78 L 67.94,173.04 L 67.57,173.20 L 66.57,172.90 L 66.33,171.75 L 66.43,171.00 L 66.13,170.75 L 65.16,171.12 L 64.84,171.30 L 64.79,170.95 L 64.48,170.78 L 64.34,170.56 L 64.12,170.48 L 64.07,170.77 L 64.10,170.95 L 63.81,170.80 L 63.67,170.89 L 63.11,171.23 L 62.92,170.95 L 63.11,170.91 L 63.39,170.67 L 63.73,170.41 L 63.56,170.30 L 63.18,170.42 L 62.78,170.42 L 62.86,170.00 L 62.76,169.61 L 62.56,169.56 L 62.64,170.06 L 62.51,170.36 L 62.34,170.13 L 62.19,169.80 L 62.00,170.00 L 62.12,170.30 L 61.33,170.14 L 61.64,169.72 L 61.58,169.41 L 61.20,168.82 L 60.97,169.24 L 60.63,169.88 L 60.67,169.99 L 60.44,169.91 L 60.17,169.58 L 60.03,169.78 L 59.66,170.19 L 59.66,169.35 L 59.30,168.80 L 59.18,168.04 L 58.49,168.69 L 57.84,169.00 L 57.68,168.30 L 57.77,167.41 L 57.46,167.33 L 56.68,167.85 L 56.39,167.40 L 56.23,166.91 L 54.90,167.13 L 54.44,167.51 L 54.22,168.43 L 53.42,168.38 L 53.30,167.19 L 54.12,166.82 L 54.16,166.24 L 52.81,165.82 L 52.33,165.34 L 52.63,164.07 L 52.22,164.03 L 48.99,164.79 L 47.59,165.03 L 46.87,165.10 L 46.50,166.90 L 46.95,168.14 L 48.71,168.33 L 50.30,169.35 L 51.85,171.39 L 52.00,172.08 L 52.39,172.53 L 52.46,172.90 L 52.97,172.98 L 54.02,173.09 L 54.26,173.32 L 56.17,174.77 L 57.54,176.51 L 57.76,176.65 L 57.71,176.94 L 58.18,177.80 L 58.35,178.24 L 59.04,179.78 L 59.61,181.17 L 60.80,183.14 L 61.00,183.18 L 61.17,183.31 L 61.20,183.45 L 62.53,185.41 L 62.75,185.43 L 62.87,185.54 L 63.08,185.73 L 63.26,186.48 L 63.73,187.52 L 64.34,188.11 L 65.55,188.44 L 68.74,192.25 L 69.17,197.99 L 71.36,200.43 L 69.67,200.55 L 68.74,200.74 L 67.80,202.80 L 67.71,201.21 L 66.55,200.52 L 65.34,201.39 L 64.40,202.71 L 64.68,204.17 L 64.43,205.39 L 65.49,206.61 L 65.93,208.11 L 67.18,207.23 L 67.80,208.79 L 68.17,210.54 L 71.42,212.17 L 73.41,212.73 L 76.03,216.54 L 86.89,221.53 Z","PNG":"M 25.17,86.03 L 24.92,86.37 L 25.26,86.50 L 25.70,86.84 L 26.23,87.84 L 26.66,89.33 L 26.85,90.64 L 25.57,91.26 L 23.83,91.29 L 22.89,90.98 L 22.24,90.95 L 22.05,90.61 L 21.61,90.58 L 21.14,90.54 L 20.52,91.14 L 19.58,91.23 L 18.96,91.23 L 18.40,90.95 L 18.09,90.64 L 17.65,90.70 L 17.84,91.07 L 17.90,92.04 L 17.78,92.69 L 18.24,92.85 L 18.09,94.03 L 18.21,95.46 L 18.52,96.89 L 18.49,98.33 L 17.93,98.61 L 17.62,99.54 L 17.81,99.94 L 18.12,100.16 L 18.46,99.54 L 18.68,99.66 L 19.37,99.57 L 19.96,99.32 L 20.24,99.45 L 20.71,99.79 L 21.42,99.82 L 21.92,100.22 L 22.30,100.63 L 28.97,102.31 L 29.00,102.78 L 28.69,103.24 L 28.69,104.36 L 29.00,104.58 L 28.75,104.89 L 27.72,105.67 L 27.35,106.48 L 28.01,106.73 L 28.38,106.79 L 31.93,106.42 L 32.53,105.80 L 33.40,105.89 L 34.24,106.11 L 34.62,105.77 L 34.24,102.28 L 33.43,95.99 L 33.53,91.54 L 33.62,87.20 L 33.48,87.31 L 33.40,86.95 L 33.17,86.93 L 32.68,86.97 L 32.54,86.61 L 32.08,86.58 L 31.73,86.58 L 31.67,86.86 L 31.50,86.70 L 31.12,86.73 L 30.87,86.69 L 30.52,86.73 L 30.19,86.53 L 29.91,86.75 L 29.75,86.62 L 29.35,86.81 L 29.13,86.69 L 28.94,86.81 L 28.38,86.69 L 28.10,86.28 L 27.32,86.06 L 27.10,85.85 L 26.88,86.06 L 26.54,85.81 L 26.17,86.16 L 25.17,86.03 Z","PLS":"M 18.46,55.31 L 18.77,55.16 L 19.09,54.63 L 19.05,53.48 L 23.05,48.79 L 24.32,47.36 L 26.35,46.18 L 26.48,43.94 L 26.73,43.32 L 26.38,42.54 L 25.71,41.58 L 25.53,40.96 L 25.17,40.91 L 25.03,40.54 L 24.73,40.38 L 24.26,40.26 L 23.92,39.56 L 23.84,39.39 L 23.51,39.37 L 23.42,39.11 L 24.03,38.83 L 24.29,38.60 L 24.29,38.26 L 24.14,37.96 L 23.98,37.96 L 23.98,37.74 L 24.17,37.50 L 24.11,37.14 L 24.31,36.86 L 24.31,36.63 L 24.06,36.61 L 23.75,36.55 L 23.44,36.47 L 23.23,36.02 L 22.97,36.04 L 22.77,35.49 L 22.94,34.81 L 22.72,34.69 L 22.33,34.75 L 21.80,34.96 L 21.58,35.12 L 21.33,34.72 L 21.13,34.65 L 20.69,35.32 L 20.38,35.45 L 19.91,35.34 L 19.52,34.98 L 19.44,34.55 L 19.23,34.16 L 18.80,33.97 L 18.43,34.13 L 18.06,34.34 L 17.64,35.20 L 17.43,35.42 L 17.64,35.87 L 17.73,36.28 L 17.76,36.77 L 17.73,37.17 L 17.32,37.36 L 17.14,38.26 L 17.26,39.27 L 17.64,39.51 L 17.81,39.67 L 17.70,40.04 L 17.84,40.38 L 17.93,40.68 L 17.79,40.91 L 17.64,40.88 L 17.57,41.11 L 17.42,40.93 L 17.26,40.77 L 17.06,40.99 L 16.92,40.69 L 16.75,40.60 L 16.67,40.77 L 16.78,40.99 L 16.76,41.30 L 16.51,41.55 L 16.68,43.13 L 16.57,43.16 L 16.84,44.25 L 16.82,44.65 L 16.53,44.86 L 16.67,44.96 L 16.59,45.20 L 16.47,45.21 L 16.29,45.55 L 16.22,45.66 L 16.12,45.97 L 16.25,46.35 L 15.94,46.53 L 15.72,46.70 L 15.64,46.95 L 15.58,47.42 L 15.00,47.71 L 15.22,48.58 L 15.42,48.61 L 15.53,48.63 L 15.50,48.75 L 15.34,48.83 L 15.53,49.07 L 16.03,50.18 L 16.57,51.75 L 16.72,51.81 L 16.68,51.97 L 17.14,53.24 L 17.56,54.15 L 17.82,54.74 L 18.24,55.31 L 18.46,55.22 L 18.46,55.31 Z","KDH":"M 54.36,79.78 L 53.30,78.54 L 53.24,77.23 L 54.73,76.98 L 54.61,75.67 L 55.48,74.49 L 55.54,72.19 L 56.35,71.63 L 56.17,70.45 L 59.04,70.95 L 59.85,69.45 L 60.53,67.71 L 59.78,66.34 L 60.35,65.10 L 60.85,62.24 L 59.85,61.25 L 57.79,60.44 L 58.66,59.38 L 59.16,58.70 L 60.53,58.57 L 60.41,57.70 L 59.91,55.34 L 55.98,55.78 L 53.61,54.16 L 52.55,55.90 L 51.36,55.96 L 50.12,56.27 L 49.24,54.84 L 48.25,56.34 L 47.75,54.53 L 48.12,52.86 L 47.75,51.80 L 46.94,50.74 L 47.06,49.50 L 46.62,46.89 L 44.94,46.02 L 43.19,43.97 L 39.45,46.89 L 39.08,46.21 L 35.15,44.41 L 32.90,44.59 L 32.22,43.23 L 31.16,42.85 L 29.03,42.91 L 26.98,42.36 L 26.41,46.42 L 24.61,47.54 L 23.17,49.34 L 21.74,50.84 L 20.30,52.58 L 19.43,53.51 L 18.93,55.47 L 21.61,58.76 L 22.67,62.49 L 23.98,63.80 L 24.86,65.85 L 25.92,69.77 L 26.10,77.91 L 24.86,81.71 L 25.16,85.93 L 25.23,85.87 L 25.60,85.90 L 26.22,85.99 L 26.41,85.79 L 26.45,85.62 L 26.61,85.59 L 26.71,85.72 L 26.92,85.87 L 27.13,85.70 L 27.20,85.67 L 27.25,85.74 L 27.40,85.88 L 28.17,86.10 L 28.45,86.51 L 28.99,86.63 L 29.27,86.48 L 29.34,86.53 L 29.41,86.61 L 29.52,86.52 L 29.72,86.45 L 29.90,86.45 L 29.95,86.52 L 30.21,86.36 L 30.30,86.35 L 30.57,86.52 L 30.78,86.43 L 30.98,86.48 L 31.12,86.53 L 31.38,86.51 L 31.50,86.53 L 31.63,86.56 L 31.70,86.62 L 31.78,86.40 L 31.81,86.34 L 31.93,86.36 L 32.06,86.39 L 32.58,86.42 L 32.66,86.49 L 32.73,86.69 L 32.81,86.78 L 33.02,86.72 L 33.21,86.76 L 33.44,86.77 L 33.53,86.97 L 33.55,87.09 L 33.67,87.04 L 33.70,87.03 L 33.67,87.93 L 33.62,90.97 L 33.53,96.02 L 33.86,98.64 L 33.98,99.59 L 34.71,105.64 L 34.46,106.00 L 33.37,105.80 L 32.71,105.69 L 32.46,105.81 L 32.15,106.14 L 32.26,106.47 L 32.36,106.82 L 32.48,106.82 L 32.81,106.50 L 33.15,106.86 L 33.09,107.10 L 32.95,107.71 L 33.24,107.88 L 33.88,108.27 L 34.13,107.96 L 34.43,107.99 L 34.49,108.26 L 34.63,108.63 L 34.93,108.58 L 35.38,108.51 L 35.47,108.16 L 36.10,107.84 L 36.30,107.88 L 36.19,107.48 L 36.55,107.07 L 36.46,106.75 L 36.80,106.53 L 37.02,106.54 L 37.50,106.19 L 37.81,106.22 L 37.84,105.97 L 38.03,105.89 L 38.22,104.78 L 38.53,104.68 L 39.28,104.05 L 39.36,103.88 L 39.59,103.96 L 41.26,100.92 L 41.91,100.55 L 42.52,100.30 L 42.85,99.88 L 43.12,98.15 L 43.15,97.89 L 44.13,97.64 L 44.33,97.83 L 44.99,97.73 L 45.28,97.87 L 45.42,97.56 L 45.72,97.45 L 45.92,97.62 L 46.11,97.67 L 46.31,97.69 L 46.41,97.52 L 46.64,97.56 L 46.84,97.56 L 46.81,97.27 L 47.87,96.40 L 48.68,94.89 L 49.10,93.24 L 49.31,91.17 L 50.24,89.33 L 51.05,89.60 L 51.72,89.24 L 52.32,88.32 L 52.67,85.83 L 52.67,85.36 L 51.82,84.46 L 51.97,83.67 L 52.60,83.54 L 53.02,82.73 L 53.77,82.49 L 54.36,79.78 Z","KEL":"M 104.69,56.12 L 104.69,60.47 L 102.70,63.45 L 98.33,66.94 L 97.21,70.92 L 98.21,73.65 L 95.84,74.65 L 92.84,77.38 L 92.72,79.37 L 89.10,76.64 L 87.60,77.38 L 86.48,78.88 L 84.86,83.73 L 86.11,85.72 L 85.48,89.08 L 87.48,89.08 L 89.72,90.58 L 88.48,91.32 L 88.60,93.19 L 89.23,95.80 L 82.74,97.05 L 78.75,100.41 L 75.63,112.12 L 75.38,117.72 L 73.63,119.22 L 73.01,123.21 L 70.39,126.45 L 72.14,128.94 L 76.25,130.93 L 78.87,129.94 L 82.49,132.43 L 85.23,130.68 L 88.73,129.44 L 89.72,127.07 L 90.47,123.08 L 92.59,124.33 L 94.34,126.32 L 95.59,129.69 L 97.83,127.07 L 98.21,123.21 L 99.95,123.21 L 102.20,123.95 L 105.19,122.83 L 106.57,124.95 L 109.81,128.57 L 111.93,127.44 L 114.43,128.32 L 116.80,126.45 L 117.67,124.95 L 120.29,125.08 L 123.28,126.70 L 125.15,125.45 L 126.28,125.57 L 127.77,125.82 L 127.90,123.71 L 128.02,121.96 L 130.27,122.58 L 130.02,120.96 L 129.27,119.22 L 127.02,118.22 L 124.90,116.73 L 123.66,115.36 L 123.28,113.49 L 123.53,110.87 L 123.16,108.63 L 124.16,107.01 L 119.29,103.77 L 119.17,102.15 L 119.66,96.68 L 119.66,95.06 L 118.29,94.06 L 118.42,92.82 L 117.79,89.21 L 118.67,86.59 L 117.92,81.86 L 118.29,80.62 L 120.16,78.13 L 124.90,73.78 L 122.16,70.67 L 118.42,63.45 L 115.55,58.98 L 111.43,57.11 L 108.81,57.24 L 106.94,57.24 L 104.69,56.12 Z","TRG":"M 125.28,74.03 L 125.08,74.09 L 124.76,73.95 L 123.28,75.33 L 122.05,76.50 L 120.66,77.70 L 119.85,78.61 L 118.35,80.59 L 118.11,81.83 L 118.67,84.79 L 118.76,86.87 L 118.01,88.86 L 118.01,89.36 L 118.51,92.47 L 118.42,93.97 L 118.60,93.87 L 119.60,94.78 L 119.77,95.27 L 119.29,101.78 L 119.48,102.65 L 119.60,103.84 L 122.85,105.77 L 123.66,106.20 L 124.34,106.39 L 124.40,107.14 L 123.47,108.63 L 123.72,110.93 L 123.41,113.47 L 123.73,115.26 L 124.65,116.34 L 126.21,117.57 L 129.11,119.03 L 129.66,119.73 L 129.75,120.18 L 130.08,120.87 L 130.25,122.04 L 130.42,122.40 L 130.11,122.74 L 131.05,124.76 L 132.01,124.95 L 133.32,126.14 L 135.63,126.76 L 138.00,126.57 L 139.19,127.44 L 140.37,129.38 L 139.62,130.44 L 140.00,130.87 L 139.94,131.56 L 138.38,132.49 L 139.00,134.74 L 140.25,135.98 L 141.50,136.23 L 144.61,135.80 L 145.74,136.98 L 146.86,138.66 L 146.11,140.84 L 146.55,141.53 L 145.74,142.03 L 144.24,142.84 L 142.99,144.21 L 142.74,145.21 L 141.93,147.33 L 142.31,149.01 L 141.93,150.13 L 141.12,151.26 L 142.31,152.50 L 144.93,151.63 L 148.29,152.01 L 149.29,152.69 L 150.79,153.13 L 153.35,155.87 L 154.41,155.56 L 155.22,155.37 L 155.47,156.37 L 156.65,156.43 L 157.21,156.93 L 158.02,158.18 L 158.09,159.61 L 159.58,160.86 L 160.77,160.43 L 160.83,158.37 L 160.40,155.31 L 159.65,153.19 L 160.52,150.76 L 160.27,148.70 L 161.39,148.58 L 162.08,149.14 L 164.26,148.83 L 165.95,148.26 L 165.14,147.39 L 166.69,147.08 L 168.25,143.21 L 166.69,140.47 L 166.32,137.98 L 166.32,134.80 L 167.38,133.61 L 166.01,129.75 L 165.76,128.00 L 166.20,127.13 L 165.14,122.83 L 165.82,122.65 L 164.76,120.34 L 158.90,110.31 L 156.90,105.21 L 154.53,100.85 L 153.47,98.36 L 152.54,97.05 L 152.54,96.61 L 150.98,94.75 L 148.67,92.50 L 145.24,88.77 L 143.55,87.90 L 141.68,87.71 L 137.07,84.48 L 132.76,81.37 L 129.02,76.58 L 125.28,74.03 Z","PRK":"M 54.83,76.86 L 54.83,76.99 L 54.62,77.04 L 53.88,77.14 L 53.28,77.28 L 53.35,78.50 L 54.33,79.69 L 54.39,79.84 L 53.98,81.79 L 53.89,82.39 L 53.92,82.52 L 53.02,82.84 L 52.89,83.25 L 52.85,83.56 L 52.41,83.67 L 52.03,83.79 L 51.88,84.38 L 52.77,85.36 L 52.50,88.13 L 51.79,89.32 L 51.27,89.69 L 50.76,89.63 L 50.30,89.53 L 50.04,89.91 L 49.74,90.45 L 49.59,90.89 L 49.46,91.17 L 49.27,92.04 L 49.15,93.35 L 48.65,95.13 L 48.20,96.05 L 47.62,96.80 L 46.95,97.30 L 46.92,97.62 L 46.55,97.67 L 46.17,97.76 L 45.80,97.62 L 45.49,97.73 L 45.27,97.97 L 45.05,97.84 L 44.36,97.90 L 44.16,97.76 L 43.19,97.95 L 42.88,100.05 L 42.74,100.27 L 41.43,100.89 L 41.29,101.05 L 40.84,102.06 L 39.97,103.46 L 39.73,104.08 L 39.37,104.16 L 38.27,104.85 L 38.22,105.38 L 38.03,106.01 L 37.56,106.33 L 37.13,106.72 L 36.72,106.70 L 36.68,106.90 L 36.58,107.23 L 36.36,107.48 L 36.49,107.76 L 36.24,108.01 L 35.54,108.30 L 35.35,108.66 L 34.62,108.86 L 34.46,108.44 L 34.24,108.09 L 33.96,108.37 L 33.56,108.27 L 33.18,107.99 L 32.81,107.88 L 32.81,107.46 L 32.98,106.96 L 32.76,106.76 L 32.40,107.00 L 32.20,106.59 L 32.03,106.47 L 28.68,106.95 L 27.54,106.64 L 26.48,107.63 L 26.60,110.00 L 28.60,113.24 L 30.22,116.23 L 31.47,117.35 L 32.84,118.72 L 34.34,118.85 L 35.83,123.58 L 36.21,125.82 L 37.21,127.32 L 38.33,127.57 L 36.46,129.31 L 36.33,132.18 L 38.20,131.81 L 38.33,133.43 L 37.08,137.29 L 35.21,142.90 L 33.84,145.89 L 34.34,148.39 L 36.96,149.39 L 38.33,150.26 L 40.95,150.76 L 43.44,153.13 L 44.07,155.75 L 44.57,158.24 L 42.69,157.74 L 40.82,159.36 L 41.45,162.86 L 43.94,164.35 L 47.25,164.56 L 49.99,164.28 L 51.54,163.84 L 52.36,163.89 L 52.74,163.93 L 52.41,165.28 L 52.88,165.68 L 53.92,166.04 L 54.22,166.12 L 54.19,166.83 L 53.38,167.30 L 53.44,168.30 L 54.05,168.30 L 54.20,168.05 L 54.34,167.47 L 54.72,167.10 L 55.42,166.94 L 56.07,166.79 L 56.39,167.07 L 56.65,167.61 L 57.07,167.41 L 57.56,167.24 L 57.82,167.24 L 57.74,168.29 L 57.87,168.68 L 58.02,168.74 L 58.91,168.16 L 59.24,167.83 L 59.40,168.75 L 59.72,169.35 L 59.72,169.92 L 60.13,169.45 L 60.53,169.66 L 60.67,169.47 L 60.92,169.00 L 61.16,168.71 L 61.56,169.13 L 61.72,169.67 L 61.53,170.05 L 61.92,170.14 L 61.95,169.84 L 62.09,169.60 L 62.23,169.78 L 62.44,170.02 L 62.48,169.89 L 62.54,169.52 L 62.73,169.50 L 62.90,169.74 L 62.92,170.13 L 63.08,170.27 L 63.51,170.23 L 63.79,170.19 L 63.84,170.42 L 63.48,170.67 L 63.23,170.98 L 63.50,170.84 L 63.95,170.73 L 64.04,170.27 L 64.37,170.52 L 64.63,170.70 L 64.90,171.08 L 65.87,170.70 L 66.16,170.70 L 66.46,170.78 L 66.40,171.72 L 66.71,172.84 L 67.46,172.98 L 67.80,172.84 L 68.50,172.59 L 68.95,172.71 L 69.66,172.17 L 70.50,171.98 L 70.76,171.28 L 70.25,169.36 L 69.83,168.25 L 69.91,167.61 L 70.84,166.96 L 71.92,166.79 L 72.54,167.40 L 72.79,168.13 L 73.76,168.69 L 74.21,169.10 L 74.94,169.02 L 75.39,169.33 L 75.50,169.74 L 76.28,170.72 L 76.70,170.92 L 76.98,171.31 L 77.53,171.62 L 78.84,172.43 L 81.40,170.50 L 81.21,169.53 L 81.30,168.50 L 82.11,168.32 L 83.11,168.29 L 82.86,167.79 L 81.68,167.41 L 81.55,165.66 L 82.18,163.92 L 81.18,162.67 L 80.93,158.55 L 80.37,156.50 L 81.18,154.50 L 79.06,152.44 L 78.43,153.00 L 77.50,150.70 L 77.87,148.83 L 76.75,148.58 L 75.50,148.08 L 76.06,146.89 L 75.50,145.71 L 75.32,143.90 L 74.38,142.34 L 74.88,140.66 L 72.63,139.60 L 71.70,140.35 L 70.26,138.23 L 71.39,135.73 L 72.51,135.17 L 72.29,134.38 L 71.29,133.61 L 70.92,131.93 L 71.09,131.53 L 71.85,130.58 L 71.78,130.37 L 71.89,129.34 L 71.99,128.91 L 70.65,126.99 L 70.30,126.35 L 70.93,125.53 L 71.70,124.61 L 72.42,123.74 L 72.99,122.94 L 73.02,122.52 L 73.41,120.39 L 73.48,119.41 L 73.74,119.02 L 75.28,117.71 L 75.36,112.90 L 75.67,111.54 L 78.61,100.36 L 82.66,96.96 L 89.13,95.74 L 88.77,94.31 L 88.49,92.99 L 88.40,91.37 L 88.49,91.17 L 89.46,90.65 L 89.41,90.44 L 88.20,89.67 L 87.35,89.18 L 85.70,89.16 L 85.31,89.11 L 85.42,88.90 L 85.55,87.96 L 85.70,87.00 L 85.92,85.78 L 85.05,84.41 L 84.80,83.89 L 84.86,83.17 L 86.42,78.66 L 86.36,77.82 L 86.17,76.76 L 85.70,76.61 L 85.36,75.77 L 84.98,75.30 L 85.08,73.78 L 85.26,73.06 L 85.02,72.59 L 84.20,72.75 L 83.42,72.25 L 83.02,70.95 L 82.40,70.98 L 81.65,70.04 L 81.02,70.17 L 79.93,70.39 L 78.47,71.20 L 77.13,72.16 L 77.09,72.66 L 76.22,72.53 L 75.82,72.94 L 74.47,72.56 L 72.95,72.56 L 72.23,74.46 L 70.92,74.77 L 70.64,75.61 L 69.92,75.42 L 69.17,75.89 L 68.64,75.46 L 67.61,75.39 L 66.86,76.86 L 66.43,77.79 L 66.74,78.69 L 66.68,80.18 L 66.24,80.93 L 65.18,81.15 L 65.09,81.80 L 64.09,82.77 L 63.06,82.98 L 62.81,83.54 L 61.31,84.54 L 60.94,83.95 L 60.32,81.89 L 59.47,80.74 L 58.79,79.78 L 58.10,79.41 L 57.60,78.72 L 56.70,78.85 L 55.51,77.51 L 54.83,76.86 Z","PHG":"M 166.20,148.76 L 165.82,148.73 L 165.14,148.70 L 164.26,148.98 L 163.23,149.17 L 162.58,149.29 L 161.89,149.23 L 161.14,148.79 L 160.52,148.92 L 160.55,149.57 L 160.58,151.01 L 160.08,152.19 L 159.90,153.28 L 160.61,155.50 L 160.96,157.93 L 161.02,159.83 L 160.58,160.80 L 159.71,161.14 L 158.96,160.52 L 157.96,159.83 L 157.93,158.62 L 157.31,157.28 L 156.62,156.71 L 155.75,156.62 L 155.37,156.31 L 154.97,155.75 L 154.25,155.75 L 153.19,155.87 L 151.82,154.44 L 150.66,153.22 L 149.32,152.94 L 148.01,152.13 L 144.86,151.82 L 142.87,152.50 L 142.06,152.60 L 141.09,151.57 L 141.09,150.95 L 141.81,149.76 L 142.06,148.89 L 141.78,147.33 L 142.52,144.55 L 143.15,143.62 L 144.21,142.31 L 145.49,142.00 L 146.02,141.22 L 145.99,140.44 L 146.67,138.91 L 146.14,137.79 L 144.65,136.20 L 143.90,136.11 L 142.77,136.33 L 141.25,136.61 L 139.75,136.04 L 138.72,134.58 L 138.10,132.55 L 138.60,131.96 L 139.72,131.15 L 139.50,130.75 L 139.66,130.03 L 139.97,129.00 L 138.13,127.01 L 136.85,126.88 L 135.20,126.85 L 133.20,126.35 L 131.67,125.17 L 131.05,125.26 L 129.89,122.77 L 128.27,122.27 L 128.02,124.39 L 128.05,125.42 L 128.18,125.82 L 127.52,125.98 L 126.28,125.73 L 124.90,125.89 L 123.22,126.85 L 120.29,125.29 L 117.76,125.17 L 117.01,126.48 L 115.08,128.00 L 114.83,128.47 L 113.86,128.29 L 112.05,127.63 L 109.84,128.75 L 109.50,128.41 L 105.85,124.20 L 105.16,123.02 L 102.04,124.08 L 99.86,123.39 L 98.52,123.33 L 98.30,123.74 L 98.11,125.89 L 97.96,127.16 L 96.74,128.57 L 95.59,129.91 L 95.34,129.41 L 94.34,126.45 L 92.63,124.58 L 90.60,123.33 L 90.41,124.36 L 89.88,127.19 L 88.66,129.59 L 85.39,130.75 L 83.52,131.96 L 82.43,132.62 L 78.81,130.22 L 77.37,130.68 L 76.00,131.00 L 72.57,129.41 L 72.07,129.16 L 72.01,129.75 L 71.98,130.34 L 72.01,130.72 L 71.04,131.90 L 71.42,133.46 L 71.60,133.71 L 72.38,134.24 L 72.60,135.23 L 71.57,135.80 L 71.36,136.54 L 70.54,138.26 L 71.04,138.97 L 71.42,139.75 L 71.79,139.82 L 72.63,139.32 L 74.69,140.22 L 75.16,140.88 L 74.60,142.22 L 74.88,142.93 L 75.44,143.77 L 75.72,145.80 L 76.22,146.83 L 75.69,148.08 L 77.90,148.51 L 77.94,148.95 L 77.75,150.66 L 78.28,152.22 L 78.75,152.54 L 79.12,152.29 L 81.30,154.41 L 80.52,156.46 L 81.02,158.05 L 81.24,162.20 L 81.43,162.61 L 82.33,163.82 L 82.05,164.67 L 81.68,165.82 L 81.77,167.26 L 82.89,167.38 L 85.11,170.13 L 85.58,170.50 L 86.14,170.75 L 86.61,171.19 L 87.95,171.06 L 88.45,170.94 L 88.73,171.06 L 88.98,171.47 L 89.31,172.15 L 89.54,172.37 L 89.90,172.47 L 90.02,172.52 L 90.17,172.99 L 90.22,173.42 L 90.85,173.92 L 90.92,174.35 L 90.82,174.74 L 91.21,174.89 L 91.31,174.92 L 91.63,175.61 L 91.80,175.66 L 92.16,176.02 L 92.31,176.15 L 91.92,177.24 L 91.98,177.86 L 91.79,178.63 L 90.86,178.76 L 90.57,179.19 L 90.41,179.74 L 89.90,180.37 L 89.87,180.80 L 90.04,180.95 L 90.38,181.73 L 90.72,182.79 L 90.85,183.64 L 90.63,184.82 L 90.01,185.45 L 89.69,186.51 L 90.47,186.97 L 90.66,187.91 L 91.32,188.19 L 92.00,189.13 L 93.87,190.69 L 96.02,191.38 L 96.59,191.38 L 97.33,190.59 L 97.74,190.25 L 98.02,190.38 L 98.58,191.03 L 99.49,190.78 L 99.67,191.81 L 99.86,192.34 L 100.89,192.94 L 101.76,193.06 L 102.48,193.06 L 103.38,195.59 L 103.70,195.53 L 104.16,195.28 L 105.01,194.68 L 105.60,194.62 L 105.94,194.43 L 107.16,194.43 L 108.00,195.34 L 117.33,197.71 L 118.23,198.21 L 122.69,203.05 L 129.08,207.23 L 131.86,208.73 L 132.30,211.04 L 136.94,212.79 L 137.53,213.04 L 144.61,221.69 L 152.82,224.97 L 153.50,224.72 L 161.33,221.97 L 161.83,222.03 L 165.32,223.38 L 173.40,227.72 L 174.62,226.84 L 174.15,225.03 L 172.99,224.47 L 173.84,220.19 L 173.93,218.54 L 173.18,217.29 L 168.19,212.29 L 165.45,206.42 L 165.95,201.05 L 166.20,195.06 L 164.82,188.19 L 165.70,183.70 L 166.82,182.20 L 167.44,180.33 L 165.82,178.21 L 161.58,171.97 L 160.58,168.85 L 161.70,166.73 L 163.08,165.85 L 162.45,163.86 L 163.20,160.74 L 164.45,159.24 L 165.45,159.99 L 165.70,158.87 L 163.95,156.12 L 163.33,152.75 L 164.32,152.25 L 164.95,150.01 L 166.07,150.13 L 166.20,148.76 Z","SBH":"M 707.86,94.81 L 707.11,98.29 L 712.35,102.28 L 715.34,103.27 L 715.84,107.26 L 711.35,111.99 L 712.85,114.48 L 717.59,112.74 L 721.08,121.71 L 714.84,130.44 L 717.09,132.68 L 716.34,136.42 L 717.59,140.66 L 719.33,143.15 L 721.33,144.40 L 719.83,148.39 L 721.33,152.88 L 723.33,149.39 L 726.32,146.64 L 728.81,147.14 L 730.06,144.90 L 730.56,141.65 L 732.06,140.41 L 736.80,142.65 L 739.04,145.15 L 741.54,143.15 L 744.28,142.40 L 744.53,140.91 L 749.27,141.16 L 753.02,139.91 L 756.26,145.15 L 759.00,143.15 L 761.00,143.40 L 761.25,141.16 L 762.25,139.66 L 763.99,141.16 L 764.74,142.65 L 769.48,143.15 L 770.98,140.66 L 773.47,142.40 L 777.72,141.65 L 781.21,142.65 L 784.70,143.15 L 788.94,142.40 L 793.18,141.90 L 799.17,146.14 L 804.16,150.13 L 808.90,150.63 L 813.64,150.13 L 818.38,148.14 L 812.65,145.40 L 810.40,144.40 L 808.40,140.16 L 810.65,138.66 L 816.39,142.90 L 819.13,143.40 L 824.37,148.14 L 833.35,145.40 L 842.34,143.40 L 852.81,141.16 L 854.56,139.16 L 858.55,138.66 L 859.05,135.67 L 853.81,135.92 L 851.82,133.18 L 843.83,129.44 L 837.10,125.45 L 834.85,120.71 L 832.11,118.72 L 835.60,116.73 L 839.34,113.74 L 843.83,114.24 L 844.33,111.99 L 847.33,113.99 L 851.57,115.98 L 858.30,115.73 L 865.04,113.49 L 869.78,110.00 L 877.02,108.75 L 882.51,105.52 L 885.00,101.78 L 884.50,97.05 L 881.01,91.82 L 878.26,92.32 L 875.27,93.56 L 870.28,92.82 L 855.31,83.11 L 847.58,77.38 L 842.34,74.90 L 836.35,73.90 L 833.35,78.13 L 828.61,80.87 L 825.12,79.37 L 826.37,76.39 L 832.85,75.14 L 833.85,72.16 L 829.11,69.92 L 829.36,65.94 L 826.87,63.70 L 822.38,67.18 L 820.63,69.67 L 816.14,70.17 L 813.39,71.16 L 809.40,71.91 L 811.40,68.93 L 813.14,66.19 L 808.90,59.23 L 811.65,55.75 L 815.39,55.25 L 815.14,48.79 L 812.90,45.06 L 808.65,42.32 L 805.41,38.85 L 799.42,40.09 L 795.43,38.35 L 793.43,33.38 L 792.94,24.94 L 788.44,20.72 L 783.70,22.95 L 782.21,29.66 L 779.71,35.62 L 772.48,40.83 L 770.98,38.35 L 774.97,31.39 L 774.72,23.45 L 771.48,19.73 L 767.49,24.69 L 765.49,28.17 L 765.24,35.87 L 758.25,42.08 L 755.26,46.05 L 749.27,52.76 L 744.03,59.48 L 740.29,62.96 L 740.54,67.43 L 736.05,65.44 L 736.55,68.18 L 738.30,71.66 L 735.80,76.39 L 730.56,79.13 L 730.56,84.85 L 724.82,88.09 L 718.34,87.34 L 718.83,85.10 L 717.59,83.61 L 715.34,87.59 L 707.86,94.81 Z","LBN":"M 701.87,94.71 L 701.28,94.90 L 700.81,95.62 L 700.18,96.21 L 699.84,96.83 L 699.12,98.11 L 698.78,98.85 L 698.75,99.63 L 698.34,100.35 L 698.00,101.00 L 698.50,101.16 L 699.16,100.54 L 699.93,99.69 L 700.62,99.76 L 701.15,100.50 L 701.68,101.28 L 702.02,101.16 L 701.90,100.60 L 701.74,100.19 L 701.62,99.54 L 702.15,99.97 L 702.65,99.88 L 703.05,99.41 L 702.80,98.64 L 702.30,97.42 L 702.02,96.55 L 702.15,95.18 L 702.55,94.93 L 702.37,94.40 L 701.87,94.71 Z","SWK":"M 721.33,154.13 L 721.64,153.47 L 721.42,153.22 L 720.95,152.32 L 719.55,148.42 L 721.11,144.68 L 720.49,144.02 L 719.65,143.81 L 717.40,140.91 L 716.12,136.36 L 716.93,132.83 L 714.56,130.37 L 715.97,128.25 L 720.80,121.65 L 717.52,112.93 L 713.10,114.61 L 712.53,114.33 L 711.54,113.18 L 710.10,113.74 L 709.04,115.11 L 708.42,116.48 L 706.17,117.23 L 704.99,116.79 L 702.18,116.10 L 701.24,114.48 L 699.62,113.99 L 699.75,115.61 L 698.06,116.29 L 697.88,117.79 L 699.06,118.28 L 699.62,119.59 L 701.43,120.90 L 701.49,122.90 L 702.49,124.83 L 702.30,126.01 L 702.87,126.51 L 702.93,127.76 L 703.80,128.63 L 703.68,131.68 L 703.05,133.68 L 703.43,136.04 L 703.37,137.29 L 704.24,138.97 L 705.55,140.16 L 706.36,141.22 L 707.48,142.40 L 706.80,143.77 L 705.42,144.46 L 704.55,143.46 L 704.05,142.53 L 702.62,142.78 L 701.81,141.47 L 698.50,141.03 L 697.07,141.22 L 695.13,140.35 L 695.26,138.72 L 694.76,134.55 L 693.07,129.94 L 692.95,128.19 L 692.70,126.26 L 692.95,125.08 L 691.89,123.46 L 693.32,121.96 L 692.57,121.77 L 692.20,119.53 L 692.14,117.29 L 690.89,117.97 L 690.77,119.53 L 689.83,120.78 L 687.40,120.71 L 684.59,121.52 L 683.41,123.71 L 681.22,124.58 L 681.16,125.89 L 681.78,127.01 L 682.47,129.81 L 682.91,135.92 L 683.59,138.23 L 685.71,138.23 L 685.65,141.97 L 683.47,145.02 L 683.78,145.40 L 684.84,144.65 L 682.03,149.70 L 682.28,150.51 L 681.22,152.07 L 679.35,154.81 L 675.98,157.49 L 673.30,157.99 L 673.74,156.37 L 672.05,156.00 L 670.93,154.13 L 670.62,152.63 L 669.12,151.76 L 668.19,151.63 L 666.56,148.58 L 666.07,146.46 L 665.50,145.65 L 664.82,146.39 L 663.82,146.21 L 662.32,146.08 L 660.51,146.21 L 659.64,145.96 L 660.45,142.15 L 659.52,141.09 L 659.70,140.28 L 659.02,138.35 L 658.21,136.23 L 655.96,134.05 L 654.53,133.68 L 652.90,132.12 L 648.48,131.43 L 644.48,131.68 L 645.98,138.16 L 637.50,151.38 L 631.26,160.61 L 619.28,168.60 L 614.79,178.08 L 607.06,186.32 L 603.32,191.06 L 597.58,197.31 L 587.35,199.55 L 539.45,210.29 L 529.22,215.79 L 524.72,213.79 L 521.98,217.79 L 519.98,228.53 L 517.49,239.28 L 517.74,242.02 L 517.99,245.27 L 509.51,267.52 L 500.02,268.27 L 497.03,269.52 L 489.05,267.77 L 486.55,266.02 L 488.05,261.77 L 484.80,260.52 L 482.81,263.02 L 478.57,259.52 L 474.58,262.02 L 465.09,262.52 L 460.10,263.02 L 457.36,259.27 L 449.88,254.77 L 448.38,252.27 L 447.88,245.52 L 444.64,250.27 L 443.14,253.77 L 446.13,258.02 L 448.63,259.27 L 448.13,267.02 L 452.62,270.27 L 455.36,274.77 L 461.60,275.52 L 462.35,280.27 L 466.59,284.27 L 470.58,284.77 L 474.33,288.02 L 476.32,293.77 L 480.56,294.27 L 484.31,298.77 L 492.04,300.27 L 499.53,298.02 L 503.02,294.02 L 519.24,291.02 L 526.72,293.77 L 531.21,293.02 L 534.21,295.27 L 538.45,292.77 L 546.43,295.27 L 548.68,291.77 L 551.67,289.27 L 561.40,287.77 L 562.40,280.02 L 564.64,276.52 L 563.65,273.52 L 575.62,268.27 L 581.11,268.02 L 592.59,269.52 L 595.58,267.77 L 600.32,268.02 L 603.32,270.27 L 599.57,273.77 L 599.82,276.02 L 605.31,274.27 L 608.81,276.77 L 613.80,277.02 L 617.79,280.52 L 622.03,280.52 L 626.02,281.02 L 629.26,283.52 L 636.25,280.77 L 636.50,277.77 L 642.49,274.52 L 648.73,273.27 L 653.47,274.27 L 657.71,273.77 L 663.45,271.77 L 670.93,274.77 L 672.43,271.02 L 676.67,265.02 L 677.92,261.52 L 678.17,256.02 L 681.16,255.77 L 684.90,252.52 L 685.15,247.52 L 681.16,246.02 L 680.16,241.77 L 682.16,236.78 L 688.15,236.03 L 688.15,233.53 L 695.38,228.03 L 701.12,225.78 L 699.37,222.78 L 696.38,222.03 L 695.13,220.78 L 696.13,217.04 L 696.63,212.79 L 695.63,210.04 L 701.37,205.05 L 703.86,202.05 L 708.36,203.55 L 713.35,201.55 L 716.09,196.56 L 714.09,191.06 L 717.09,184.07 L 719.58,182.57 L 717.59,176.58 L 717.84,168.35 L 718.34,163.61 L 717.09,160.61 L 719.33,159.61 L 721.33,154.13 Z","KUL":"M 85.00,192.44 L 84.91,192.64 L 84.64,192.73 L 84.03,192.87 L 83.91,193.06 L 84.10,193.36 L 83.33,194.43 L 83.10,194.54 L 83.11,195.59 L 82.97,196.48 L 83.33,196.99 L 84.16,197.51 L 84.55,197.74 L 84.33,197.96 L 84.70,198.30 L 84.98,198.35 L 85.00,198.85 L 85.05,199.32 L 84.94,199.87 L 84.41,200.19 L 84.56,200.32 L 84.56,200.57 L 84.61,200.82 L 85.03,200.83 L 84.64,201.18 L 84.73,201.35 L 85.33,201.44 L 85.59,201.55 L 86.33,201.52 L 87.04,201.36 L 87.53,201.04 L 87.84,201.44 L 87.85,201.82 L 88.04,201.86 L 88.29,201.74 L 88.31,200.94 L 89.10,200.88 L 89.09,200.01 L 88.87,199.60 L 89.27,199.12 L 89.23,198.60 L 88.93,198.35 L 88.63,198.34 L 88.71,197.76 L 88.45,197.26 L 89.12,196.34 L 89.12,196.10 L 88.56,196.01 L 88.35,195.64 L 88.62,195.39 L 89.26,195.50 L 89.49,194.98 L 89.46,194.48 L 88.63,193.62 L 88.80,193.08 L 88.57,192.87 L 88.17,192.90 L 87.53,193.67 L 86.93,193.58 L 86.92,193.33 L 86.70,193.09 L 85.58,193.01 L 85.36,192.48 L 85.17,192.33 L 85.00,192.44 Z","PJY":"M 87.15,204.28 L 87.07,204.42 L 86.75,204.50 L 86.08,204.78 L 85.69,204.72 L 85.34,204.90 L 85.16,205.06 L 85.26,205.43 L 85.72,205.74 L 85.69,205.88 L 85.26,206.02 L 85.42,206.30 L 85.40,206.67 L 85.57,206.96 L 85.58,207.26 L 85.46,207.32 L 85.46,207.48 L 85.42,207.57 L 85.30,207.59 L 85.22,207.60 L 85.20,207.70 L 85.13,207.84 L 85.03,208.00 L 85.12,208.43 L 85.18,208.54 L 85.15,208.59 L 85.27,208.91 L 85.56,208.77 L 85.64,209.01 L 85.72,208.88 L 85.84,208.93 L 86.14,208.83 L 86.18,208.68 L 86.30,208.36 L 86.61,208.30 L 86.74,208.06 L 86.91,207.95 L 86.87,207.76 L 86.75,207.66 L 86.78,207.56 L 86.87,207.42 L 87.18,207.38 L 87.20,206.64 L 88.33,206.68 L 88.29,205.57 L 88.24,205.50 L 87.53,205.48 L 87.52,205.11 L 87.45,205.13 L 87.35,205.22 L 87.21,205.15 L 87.00,205.13 L 86.97,204.95 L 86.83,204.92 L 86.89,204.63 L 87.19,204.39 L 87.23,204.24 L 87.15,204.28 Z"};
+
+
+// Manually curated completion percentages per state (drives realistic variation)
+const STATE_TARGET_PCT = {
+  PLS:100, KDH:71, PNG:83, KEL:50, TRG:60, PRK:75, PHG:43, SEL:83,
+  KUL:100, PJY:100, NSN:88, MLK:100, JHR:67, SWK:38, SBH:25, LBN:50
+};
+
+/* Official 54-outlet directory imported from the supplied PERKESO workbook.
+   Project dates, completion status and evidence remain illustrative prototype data. */
+const REAL_OUTLET_DATA = [
+  {
+    "id": "OT-1000",
+    "number": 1,
+    "stateId": "KUL",
+    "state": "Kuala Lumpur",
+    "name": "Ibu Pejabat Pertubuhan Keselamatan Sosial",
+    "address": "Menara PERKESO, 281, Jalan Ampang, 50538 Kuala Lumpur."
+  },
+  {
+    "id": "OT-1001",
+    "number": 2,
+    "stateId": "KUL",
+    "state": "Kuala Lumpur",
+    "name": "Pejabat PERKESO Negeri Wilayah Persekutuan Kuala Lumpur",
+    "address": "Wisma PERKESO, No. 155, Jalan Tun Razak, 50400 Kuala Lumpur."
+  },
+  {
+    "id": "OT-1002",
+    "number": 3,
+    "stateId": "SEL",
+    "state": "Selangor",
+    "name": "Pejabat PERKESO Negeri Selangor",
+    "address": "Wisma PERKESO, Lot 141, Seksyen 6, Jalan Selangor, 46990 Petaling Jaya, Selangor Darul Ehsan."
+  },
+  {
+    "id": "OT-1003",
+    "number": 4,
+    "stateId": "SEL",
+    "state": "Selangor",
+    "name": "Pejabat PERKESO Rawang",
+    "address": "29, Jalan Setia Rawang 1, KM 25, Jalan Ipoh, 48000 Rawang, Selangor."
+  },
+  {
+    "id": "OT-1004",
+    "number": 5,
+    "stateId": "SEL",
+    "state": "Selangor",
+    "name": "Pejabat PERKESO Klang",
+    "address": "Wisma PERKESO, Tower C @ BBT One, Lebuh Batu Nilam 3, Bandar Bukit Tinggi, 41200 Klang, Selangor."
+  },
+  {
+    "id": "OT-1005",
+    "number": 6,
+    "stateId": "PJY",
+    "state": "Putrajaya",
+    "name": "Pejabat PERKESO Putrajaya",
+    "address": "Menara PERKESO Putrajaya, No. 6, Persiaran Perdana, Presint 2, 62100 Putrajaya."
+  },
+  {
+    "id": "OT-1006",
+    "number": 7,
+    "stateId": "SEL",
+    "state": "Selangor",
+    "name": "Pejabat PERKESO Tanjung Karang",
+    "address": "No. 38, Jalan Ria Mas 1, Taman Ria Mas, 45500 Tanjong Karang, Selangor Darul Ehsan."
+  },
+  {
+    "id": "OT-1007",
+    "number": 8,
+    "stateId": "JHR",
+    "state": "Johor",
+    "name": "Pejabat PERKESO Negeri Johor",
+    "address": "Wisma PERKESO, No. 26, Jalan Susur 5, Off Jalan Tun Abdul Razak, Larkin, 80200 Johor Bahru, Johor."
+  },
+  {
+    "id": "OT-1008",
+    "number": 9,
+    "stateId": "JHR",
+    "state": "Johor",
+    "name": "Pejabat PERKESO Muar",
+    "address": "No. 34 & 35, Jalan Pesta ½, Taman Tun Dr. Ismail, Jalan Bakri, 84000 Muar, Johor."
+  },
+  {
+    "id": "OT-1009",
+    "number": 10,
+    "stateId": "JHR",
+    "state": "Johor",
+    "name": "Pejabat PERKESO Batu Pahat",
+    "address": "No. 16 & 17, Jalan Setia Jaya, Taman Setia Jaya, 83000 Batu Pahat, Johor."
+  },
+  {
+    "id": "OT-1010",
+    "number": 11,
+    "stateId": "JHR",
+    "state": "Johor",
+    "name": "Pejabat PERKESO Kluang",
+    "address": "No. 28, Jalan Duku, Jalan Kg Haji Manan, 86000 Kluang, Johor."
+  },
+  {
+    "id": "OT-1011",
+    "number": 12,
+    "stateId": "JHR",
+    "state": "Johor",
+    "name": "Pejabat PERKESO Segamat",
+    "address": "No. 13, Jalan Emas, Taman Batu Hampar, 85000 Segamat, Johor."
+  },
+  {
+    "id": "OT-1012",
+    "number": 13,
+    "stateId": "PRK",
+    "state": "Perak",
+    "name": "Pejabat PERKESO Negeri Perak",
+    "address": "Wisma PERKESO, No. 83, Jalan Hospital, 30450 Ipoh, Perak."
+  },
+  {
+    "id": "OT-1013",
+    "number": 14,
+    "stateId": "PRK",
+    "state": "Perak",
+    "name": "Pejabat PERKESO Taiping",
+    "address": "No. 33 & 35, Persiaran TBC, Taiping Business Centre, 34000 Taiping, Perak."
+  },
+  {
+    "id": "OT-1014",
+    "number": 15,
+    "stateId": "PRK",
+    "state": "Perak",
+    "name": "Pejabat PERKESO Kuala Kangsar",
+    "address": "No. 8E/8F, Plot 3000 & 3001, Jalan Raja Chulan, 33000 Kuala Kangsar, Perak."
+  },
+  {
+    "id": "OT-1015",
+    "number": 16,
+    "stateId": "PRK",
+    "state": "Perak",
+    "name": "Pejabat PERKESO Tapah",
+    "address": "Lot 5399, No. 6 & 7, Jalan Bidor, 35000 Tapah, Perak."
+  },
+  {
+    "id": "OT-1016",
+    "number": 17,
+    "stateId": "PRK",
+    "state": "Perak",
+    "name": "Pejabat PERKESO Teluk Intan",
+    "address": "No. 8-10, Medan Sri Intan, Jalan Sekolah, 36000 Teluk Intan, Perak."
+  },
+  {
+    "id": "OT-1017",
+    "number": 18,
+    "stateId": "PRK",
+    "state": "Perak",
+    "name": "Pejabat PERKESO Sri Manjung",
+    "address": "No. 125 & 126, Jalan PPMP 33, Pusat Perniagaan Manjung Point, 32040 Sri Manjung, Perak."
+  },
+  {
+    "id": "OT-1018",
+    "number": 19,
+    "stateId": "PHG",
+    "state": "Pahang",
+    "name": "Pejabat Negeri PERKESO Pahang",
+    "address": "Wisma PERKESO, Jalan Mat Kilau, 25000 Kuantan, Pahang."
+  },
+  {
+    "id": "OT-1019",
+    "number": 20,
+    "stateId": "PHG",
+    "state": "Pahang",
+    "name": "Pejabat PERKESO Temerloh",
+    "address": "No. 19 & 21, Jalan Sudirman 3, Bandar Baru Seri Semantan, 28000 Temerloh, Pahang."
+  },
+  {
+    "id": "OT-1020",
+    "number": 21,
+    "stateId": "PHG",
+    "state": "Pahang",
+    "name": "Pejabat PERKESO Bentong",
+    "address": "P4, Pusat Perniagaan Ketari, Jalan Ketari, 28700 Bentong, Pahang."
+  },
+  {
+    "id": "OT-1021",
+    "number": 22,
+    "stateId": "KDH",
+    "state": "Kedah",
+    "name": "Pejabat PERKESO Negeri Kedah",
+    "address": "Wisma PERKESO, Lot 186, Jalan Telok Wanjah, 05538 Alor Setar, Kedah."
+  },
+  {
+    "id": "OT-1022",
+    "number": 23,
+    "stateId": "KDH",
+    "state": "Kedah",
+    "name": "Pejabat PERKESO Langkawi",
+    "address": "Lot 11, No. 11G, 11-1, 11-2 & 11-3, Mahacity, Jalan Mahawangsa, Kuah, 07000 Langkawi."
+  },
+  {
+    "id": "OT-1023",
+    "number": 24,
+    "stateId": "KDH",
+    "state": "Kedah",
+    "name": "Pejabat PERKESO Sungai Petani",
+    "address": "No. 30 & 31, Lengkok Cempaka 1, Persiaran Cempaka, Bandar Aman Jaya, 08000 Sungai Petani, Kedah."
+  },
+  {
+    "id": "OT-1024",
+    "number": 25,
+    "stateId": "KDH",
+    "state": "Kedah",
+    "name": "Pejabat PERKESO Kulim",
+    "address": "Wisma PERKESO, 582 & 583, Lorong Kemuning 1, Taman Kemuning, 09000 Kulim, Kedah."
+  },
+  {
+    "id": "OT-1025",
+    "number": 26,
+    "stateId": "PNG",
+    "state": "Pulau Pinang",
+    "name": "Pejabat PERKESO Negeri Pulau Pinang",
+    "address": "Wisma PERKESO, No. 3012, Lebuh Tenggiri 2, 13700 Seberang Jaya, Perai, Pulau Pinang."
+  },
+  {
+    "id": "OT-1026",
+    "number": 27,
+    "stateId": "PNG",
+    "state": "Pulau Pinang",
+    "name": "Pejabat PERKESO George Town",
+    "address": "Wisma PERKESO, No. 269, Jalan Burma, 10538 Georgetown, Pulau Pinang."
+  },
+  {
+    "id": "OT-1027",
+    "number": 28,
+    "stateId": "NSN",
+    "state": "Negeri Sembilan",
+    "name": "Pejabat PERKESO Negeri, Negeri Sembilan",
+    "address": "Wisma PERKESO, Lot 3757, Lot 52, Jalan Sungai Ujong, 70000 Seremban, Negeri Sembilan."
+  },
+  {
+    "id": "OT-1028",
+    "number": 29,
+    "stateId": "NSN",
+    "state": "Negeri Sembilan",
+    "name": "Pejabat PERKESO Kuala Pilah (Pejabat Satelit)",
+    "address": "No. 8 & 9, Jalan Melang 1, Pusat Komersial Melang, 72000 Kuala Pilah, Negeri Sembilan."
+  },
+  {
+    "id": "OT-1029",
+    "number": 30,
+    "stateId": "MLK",
+    "state": "Melaka",
+    "name": "Pejabat PERKESO Negeri Melaka",
+    "address": "Wisma PERKESO, Jalan Persekutuan MITC, 75450 Ayer Keroh, Melaka."
+  },
+  {
+    "id": "OT-1030",
+    "number": 31,
+    "stateId": "KEL",
+    "state": "Kelantan",
+    "name": "Pejabat PERKESO Negeri Kelantan",
+    "address": "Wisma PERKESO, PT 304-307, Seksyen 22, Jalan Kota Darul Naim, 15538 Kota Bharu, Kelantan."
+  },
+  {
+    "id": "OT-1031",
+    "number": 32,
+    "stateId": "KEL",
+    "state": "Kelantan",
+    "name": "Pejabat PERKESO Kuala Krai",
+    "address": "Lot 2441, Mukim Bandar Kuala Krai, Bandar Kuala Krai, 18000 Kuala Krai, Kelantan."
+  },
+  {
+    "id": "OT-1032",
+    "number": 33,
+    "stateId": "TRG",
+    "state": "Terengganu",
+    "name": "Pejabat PERKESO Negeri Terengganu",
+    "address": "Wisma PERKESO, Lot 2467, Jalan Air Jernih, 20538 Kuala Terengganu."
+  },
+  {
+    "id": "OT-1033",
+    "number": 34,
+    "stateId": "TRG",
+    "state": "Terengganu",
+    "name": "Pejabat PERKESO Kemaman",
+    "address": "Lot PT 16086 & Lot PT 16087, Taman Chukai Utama, Jalan Kubang Kurus, 24000 Kemaman, Terengganu."
+  },
+  {
+    "id": "OT-1034",
+    "number": 35,
+    "stateId": "TRG",
+    "state": "Terengganu",
+    "name": "Pejabat PERKESO Dungun (Pejabat Satelit)",
+    "address": "Lot 8433, Jalan Yahya Ahmad, 23000 Dungun, Terengganu."
+  },
+  {
+    "id": "OT-1035",
+    "number": 36,
+    "stateId": "PLS",
+    "state": "Perlis",
+    "name": "Pejabat PERKESO Negeri Perlis",
+    "address": "No. 6A & 8A, Jalan Hospital, 01000 Kangar, Perlis."
+  },
+  {
+    "id": "OT-1036",
+    "number": 37,
+    "stateId": "SBH",
+    "state": "Sabah",
+    "name": "Pejabat PERKESO Negeri Sabah",
+    "address": "Wisma PERKESO, No. 11, Lorong Sempelang, Tanjung Aru, 88100 Kota Kinabalu, Sabah."
+  },
+  {
+    "id": "OT-1037",
+    "number": 38,
+    "stateId": "SBH",
+    "state": "Sabah",
+    "name": "Pejabat PERKESO Tawau",
+    "address": "No. 4294 & 4295, Lot 1 & 2, Jalan Budi, 91000 Tawau, Sabah."
+  },
+  {
+    "id": "OT-1038",
+    "number": 39,
+    "stateId": "SBH",
+    "state": "Sabah",
+    "name": "Pejabat PERKESO Lahad Datu",
+    "address": "MDLD 3827, Fajar Centre, Peti Surat 61193, 91120 Lahad Datu, Sabah."
+  },
+  {
+    "id": "OT-1039",
+    "number": 40,
+    "stateId": "SBH",
+    "state": "Sabah",
+    "name": "Pejabat PERKESO Keningau",
+    "address": "Tingkat 1 & 2, Lot 22, Blok C, Adika Commercial Complex, Peti Surat 704, 89008 Keningau, Sabah."
+  },
+  {
+    "id": "OT-1040",
+    "number": 41,
+    "stateId": "SBH",
+    "state": "Sabah",
+    "name": "Pejabat PERKESO Sandakan",
+    "address": "Lot 203 & 204, Blok 23, Lorong Prima 7, Fasa 3, Bandar Prima, Batu 4, 90000 Sandakan, Sabah."
+  },
+  {
+    "id": "OT-1041",
+    "number": 42,
+    "stateId": "SBH",
+    "state": "Sabah",
+    "name": "Pejabat PERKESO Beaufort",
+    "address": "No. 2, Ground Floor - 3rd Floor, Block A, Beaufort Square Avenue 2, 89800 Beaufort, Sabah."
+  },
+  {
+    "id": "OT-1042",
+    "number": 43,
+    "stateId": "SBH",
+    "state": "Sabah",
+    "name": "Pejabat PERKESO Kota Marudu (Pejabat Satelit)",
+    "address": "Block A1, Lot No. 2, Tingkat Bawah 1 & 2, Bandar Commercial Centre, Phase 1, 89108 Kota Marudu, Sabah."
+  },
+  {
+    "id": "OT-1043",
+    "number": 44,
+    "stateId": "LBN",
+    "state": "Labuan",
+    "name": "Pejabat PERKESO Wilayah Persekutuan Labuan",
+    "address": "Tingkat 1, Bangunan Public Bank, Jalan Merdeka, Peti Surat 80394, 87014 W.P. Labuan."
+  },
+  {
+    "id": "OT-1044",
+    "number": 45,
+    "stateId": "SWK",
+    "state": "Sarawak",
+    "name": "Pejabat PERKESO Negeri Sarawak",
+    "address": "Wisma PERKESO, Lot 436, Section 54, No. 52, Travilion Commercial Centre, Jalan Padungan, 93100 Kuching, Sarawak."
+  },
+  {
+    "id": "OT-1045",
+    "number": 46,
+    "stateId": "SWK",
+    "state": "Sarawak",
+    "name": "Pejabat PERKESO Miri",
+    "address": "Lot 1184 & 1185, Blok 9 M.C.L.D., Miri Waterfront Commercial Centre, 98000 Miri, Sarawak."
+  },
+  {
+    "id": "OT-1046",
+    "number": 47,
+    "stateId": "SWK",
+    "state": "Sarawak",
+    "name": "Pejabat PERKESO Sri Aman",
+    "address": "Lot 647, Sublot 4, Jalan Paya, Peti Surat 301, 95000 Sri Aman, Sarawak."
+  },
+  {
+    "id": "OT-1047",
+    "number": 48,
+    "stateId": "SWK",
+    "state": "Sarawak",
+    "name": "Pejabat PERKESO Bintulu",
+    "address": "No. 180, Lot 3466, Parkcity Commerce Square, Phase 1, Jalan Tun Ahmad Zaidi, 97008 Bintulu, Sarawak."
+  },
+  {
+    "id": "OT-1048",
+    "number": 49,
+    "stateId": "SWK",
+    "state": "Sarawak",
+    "name": "Pejabat PERKESO Sibu",
+    "address": "No. 1-5, Lorong Pahlawan 7, Jalan Pahlawan, 96000 Sibu, Sarawak."
+  },
+  {
+    "id": "OT-1049",
+    "number": 50,
+    "stateId": "SWK",
+    "state": "Sarawak",
+    "name": "Pejabat PERKESO Kapit",
+    "address": "Tingkat Bawah, Satu dan Dua, di Sublot 8, Lot 3125, Blok 13, Menuan Land District, Peti Surat 4351, 96800 Kapit, Sarawak."
+  },
+  {
+    "id": "OT-1050",
+    "number": 51,
+    "stateId": "SWK",
+    "state": "Sarawak",
+    "name": "Pejabat PERKESO Sarikei",
+    "address": "No. 3, Sublot 5, Jalan Nenas, 96100 Sarikei, Sarawak."
+  },
+  {
+    "id": "OT-1051",
+    "number": 52,
+    "stateId": "SWK",
+    "state": "Sarawak",
+    "name": "Pejabat PERKESO Mukah (Pejabat Satelit)",
+    "address": "Sublot 6, Lot 2141, New Township Extension, Jalan Green, 96400 Mukah, Sarawak."
+  },
+  {
+    "id": "OT-1052",
+    "number": 53,
+    "stateId": "SWK",
+    "state": "Sarawak",
+    "name": "Pejabat PERKESO Limbang",
+    "address": "Lot 1083, Jalan Buangsiol, Limbang Town District, 98700 Limbang, Sarawak."
+  },
+  {
+    "id": "OT-1053",
+    "number": 54,
+    "stateId": "SWK",
+    "state": "Sarawak",
+    "name": "Pejabat PERKESO Serian",
+    "address": "Sublot 9 & 10, Lot 372, Serian Town District, Serian ByPass Road, 94700 Serian, Sarawak."
+  }
+];
+
+function seededRandom(seed){ let s = seed % 2147483647; if (s<=0) s += 2147483646;
+  return function(){ s = s * 16807 % 2147483647; return (s-1)/2147483646; }; }
+const rand = seededRandom(7331);
+function pick(arr){ return arr[Math.floor(rand()*arr.length)]; }
+
+let OUTLETS = REAL_OUTLET_DATA.map(outlet=>{
+  const targetVisits = 5;
+  const targetProgress = (STATE_TARGET_PCT[outlet.stateId] || 0) / 100;
+  const variation = Math.floor(rand()*3) - 1;
+  const completedVisits = Math.max(0, Math.min(targetVisits, Math.round(targetProgress*targetVisits) + variation));
+  const visits = [];
+
+  for(let visitNumber=1; visitNumber<=targetVisits; visitNumber++){
+    const isCompleted = visitNumber <= completedVisits;
+    const month = isCompleted ? 1 + Math.floor(rand()*7) : 7 + Math.floor(rand()*4);
+    const day = 1 + Math.floor(rand()*27);
+    visits.push({
+      visitNumber,
+      date:`2026-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`,
+      status:isCompleted ? 'Completed' : 'Scheduled',
+      evidence:isCompleted
+    });
+  }
+  visits.sort((a,b)=>a.date.localeCompare(b.date));
+  const nextVisit = visits.find(v=>v.status==='Scheduled');
+  const lastCompleted = [...visits].reverse().find(v=>v.status==='Completed');
+  const referenceVisit = nextVisit || lastCompleted || visits[0];
+
+  return {
+    ...outlet,
+    targetVisits,
+    completedVisits,
+    visits,
+    date:referenceVisit.date,
+    status:completedVisits===targetVisits ? 'Completed' : 'In Progress',
+    pct:Math.round((completedVisits/targetVisits)*100),
+    evidence:completedVisits>0
+  };
+});
+
+/* Timeline: monthly cumulative visits Jan-Dec 2026, derived per-state proportionally */
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function buildTimelineData(filteredOutlets){
+  const totalPlanned = filteredOutlets.reduce((sum,o)=>sum+o.targetVisits,0) || 1;
+  // planned cumulative ramps linearly to total by month 10 (Oct)
+  const monthly = MONTHS.map((m,idx)=>{
+    const planned = Math.round(totalPlanned * Math.min(1,(idx+1)/10));
+    const completed = filteredOutlets.reduce((sum,o)=>sum+o.visits.filter(v=>{
+      if(v.status!=='Completed') return false;
+      const [,mo] = v.date.split('-').map(Number);
+      return mo <= (idx+1);
+    }).length,0);
+    return {month:m, planned, completed: Math.min(completed, planned)};
+  });
+  return monthly;
+}
+
+/* Recent activities (synthetic, tied to real outlets) */
+const ACT_TYPES = [
+  {label:'Visit completed', icon:'check', color:'green'},
+  {label:'Evidence uploaded', icon:'upload', color:'blue'},
+  {label:'Schedule updated', icon:'calendar', color:'amber'},
+  {label:'Outlet completed', icon:'flag', color:'green'},
+  {label:'Timeline updated', icon:'clock', color:'blue'},
+];
+function buildActivities(){
+  const acts = [];
+  const sorted = [...OUTLETS].sort((a,b)=> b.date.localeCompare(a.date)).slice(0,60);
+  const now = new Date('2026-07-23T09:00:00');
+  sorted.slice(0,14).forEach((o,idx)=>{
+    const type = o.status==='Completed' ? pick([ACT_TYPES[0],ACT_TYPES[1],ACT_TYPES[3]]) : pick([ACT_TYPES[2],ACT_TYPES[4]]);
+    const hoursAgo = idx*7 + Math.floor(rand()*5);
+    const t = new Date(now.getTime() - hoursAgo*3600*1000);
+    acts.push({
+      type, outlet:o.name, state:o.state, stateId:o.stateId, time:t
+    });
+  });
+  return acts;
+}
+const ACTIVITIES = buildActivities();
+
+/* =========================================================================
+   STATE / FILTERS
+   ========================================================================= */
+const filters = { state:'all', outlet:'all', status:'all', dateFrom:null, dateTo:null };
+let sortKey = 'pct', sortDir = 'asc';
+let stateSortKey = 'pct', stateSortDir = 'asc';
+let currentPage = 1;
+const PAGE_SIZE = 8;
+
+function applyFilters(list){
+  return list.filter(o=>{
+    if(filters.state!=='all' && o.stateId!==filters.state) return false;
+    if(filters.outlet!=='all' && o.id!==filters.outlet) return false;
+    if(filters.status!=='all' && o.status!==filters.status) return false;
+    if(filters.dateFrom && o.date < filters.dateFrom) return false;
+    if(filters.dateTo && o.date > filters.dateTo) return false;
+    return true;
+  });
+}
+
+/* =========================================================================
+   ICONS (Phosphor Icons)
+   ========================================================================= */
+const ICONS = {
+  building: '<i class="ph-duotone ph-buildings"></i>',
+  check: '<i class="ph-duotone ph-check-circle"></i>',
+  loader: '<i class="ph-duotone ph-spinner-gap"></i>',
+  percent: '<i class="ph-duotone ph-gauge"></i>',
+  map: '<i class="ph-duotone ph-map-trifold"></i>',
+  clock: '<i class="ph-duotone ph-clock"></i>',
+  upload: '<i class="ph-duotone ph-cloud-arrow-up"></i>',
+  calendar: '<i class="ph-duotone ph-calendar-dots"></i>',
+  flag: '<i class="ph-duotone ph-flag-checkered"></i>',
+};
+
+/* =========================================================================
+   RENDER: FILTER DROPDOWNS
+   ========================================================================= */
+function renderFilterOptions(){
+  const stateSel = document.getElementById('f-state');
+  stateSel.innerHTML = '<option value="all">All states</option>' + STATES
+    .slice().sort((a,b)=>a.name.localeCompare(b.name))
+    .map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+
+  const outletSel = document.getElementById('f-outlet');
+  function refreshOutletOptions(){
+    const pool = filters.state==='all' ? OUTLETS : OUTLETS.filter(o=>o.stateId===filters.state);
+    outletSel.innerHTML = '<option value="all">All outlets</option>' + pool
+      .map(o=>`<option value="${o.id}">${o.name}</option>`).join('');
+  }
+  refreshOutletOptions();
+  stateSel.addEventListener('change', ()=>{
+    filters.state = stateSel.value; filters.outlet='all';
+    refreshOutletOptions(); currentPage=1; renderAll();
+  });
+  outletSel.addEventListener('change', ()=>{ filters.outlet = outletSel.value; currentPage=1; renderAll(); });
+  document.getElementById('f-status').addEventListener('change', e=>{ filters.status=e.target.value; currentPage=1; renderAll(); });
+  document.getElementById('f-date-from').addEventListener('change', e=>{ filters.dateFrom = e.target.value||null; currentPage=1; renderAll(); });
+  document.getElementById('f-date-to').addEventListener('change', e=>{ filters.dateTo = e.target.value||null; currentPage=1; renderAll(); });
+  document.getElementById('reset-filters').addEventListener('click', ()=>{
+    filters.state='all'; filters.outlet='all'; filters.status='all'; filters.dateFrom=null; filters.dateTo=null;
+    stateSel.value='all'; refreshOutletOptions(); outletSel.value='all';
+    document.getElementById('f-status').value='all';
+    document.getElementById('f-date-from').value=''; document.getElementById('f-date-to').value='';
+    currentPage=1; renderAll();
+  });
+  window.__refreshOutletOptions = refreshOutletOptions;
+}
+
+/* =========================================================================
+   RENDER: KPI CARDS
+   ========================================================================= */
+function renderKPIs(filtered){
+  const totalOutlets = filtered.length;
+  const plannedVisits = filtered.reduce((sum,o)=>sum+o.targetVisits,0);
+  const completedVisits = filtered.reduce((sum,o)=>sum+o.completedVisits,0);
+  const fullyCompletedOutlets = filtered.filter(o=>o.completedVisits===o.targetVisits).length;
+  const visitedOutlets = filtered.filter(o=>o.completedVisits>0).length;
+  const overallPct = plannedVisits ? Math.round((completedVisits/plannedVisits)*100) : 0;
+
+  const cards = [
+    {icon:'building', label:'Total Outlets', value: totalOutlets, unit:'', sub: filters.state==='all' ? 'Nationwide scope' : STATES.find(s=>s.id===filters.state)?.name, progress:null},
+    {icon:'calendar', label:'Planned Visits', value: plannedVisits, unit:'', sub:'5 visits per outlet', progress:null},
+    {icon:'check', label:'Completed Visits', value: completedVisits, unit:'', sub:`${plannedVisits-completedVisits} visits remaining`, progress:overallPct, color:'green'},
+    {icon:'flag', label:'Completed Outlets', value: fullyCompletedOutlets, unit:'', sub:`${visitedOutlets}/${totalOutlets} outlets visited`, progress:totalOutlets?Math.round((fullyCompletedOutlets/totalOutlets)*100):0, color:'amber'},
+    {icon:'percent', label:'Overall Project Progress', value: overallPct, unit:'%', sub:'Completed visits ÷ planned visits', progress:overallPct, color:'blue'},
+    {icon:'clock', label:'Last Updated', value:'23 Jul', unit:'2026', sub:'09:14 AM · Auto-synced', progress:null},
+  ];
+
+  const colorMap = {green:'var(--green)', amber:'var(--amber)', blue:'var(--blue-600)'};
+  document.getElementById('kpi-grid').innerHTML = cards.map(c=>`
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="${c.color?`background:${colorMap[c.color]}1A;color:${colorMap[c.color]}`:''}">${ICONS[c.icon]}</div>
+        ${c.label==='Overall Project Progress' ? '<span class="kpi-trend trend-up">On track</span>' : ''}
+      </div>
+      <div class="kpi-value">${c.value}<span class="unit">${c.unit}</span></div>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-sub">${c.sub}</div>
+      ${c.progress!==null ? `<div class="kpi-progress-track"><div class="kpi-progress-fill" style="width:${c.progress}%;${c.color?`background:${colorMap[c.color]}`:''}"></div></div>` : ''}
+    </div>
+  `).join('');
+}
+
+/* =========================================================================
+   RENDER: MAP (hex cartogram)
+   ========================================================================= */
+function stateFillFor(pct){
+  // Completed(100)=green, else amber/orange intensity by pct for "in progress" nuance
+  if(pct>=100) return '#1F9D55';
+  if(pct>=75) return '#3FAE6A';
+  if(pct>=50) return '#E8A33D';
+  return '#E2793A';
+}
+function stateStats(sid){
+  const outs = OUTLETS.filter(o=>o.stateId===sid);
+  const total = outs.reduce((sum,o)=>sum+o.targetVisits,0);
+  const completed = outs.reduce((sum,o)=>sum+o.completedVisits,0);
+  const pct = total ? Math.round((completed/total)*100) : 0;
+  return {total, completed, pct, outlets:outs.length};
+}
+function selectStateFilter(sid){
+  filters.state = (filters.state===sid) ? 'all' : sid;
+  filters.outlet = 'all';
+  document.getElementById('f-state').value = filters.state;
+  window.__refreshOutletOptions();
+  currentPage = 1;
+  renderAll();
+}
+function renderMap(){
+  const svg = document.getElementById('myMap');
+  svg.setAttribute('viewBox', MAP_VIEWBOX);
+  const tooltip = document.getElementById('map-tooltip');
+  const holder = document.querySelector('.map-svg-holder');
+
+  // Draw order: Selangor before its enclosed federal territories so KL/Putrajaya sit on top
+  const drawOrder = ['PLS','KDH','PNG','KEL','TRG','PRK','PHG','SEL','NSN','MLK','JHR','SWK','SBH','LBN','KUL','PJY'];
+  let html = '';
+  drawOrder.forEach(sid=>{
+    const st = STATES.find(s=>s.id===sid);
+    const {total, completed, pct} = stateStats(sid);
+    const fill = stateFillFor(pct);
+    const isActive = filters.state===sid;
+    const isDimmed = filters.state!=='all' && !isActive;
+    const d = STATE_PATHS[sid];
+    if(!d) return;
+    html += `<path class="mapstate ${isDimmed?'dimmed':''} ${isActive?'active-state':''}" data-state="${sid}" d="${d}" fill="${fill}"></path>`;
+  });
+  svg.innerHTML = html;
+
+  svg.querySelectorAll('.mapstate').forEach(el=>{
+    const sid = el.getAttribute('data-state');
+    const st = STATES.find(s=>s.id===sid);
+    el.addEventListener('click', ()=> selectStateFilter(sid));
+    el.addEventListener('mousemove', (e)=>{
+      const {total, completed, pct} = stateStats(sid);
+      tooltip.innerHTML = `<b>${st.name}</b><br>${completed}/${total} visits completed · ${pct}%`;
+      tooltip.style.opacity = 1;
+      const r = holder.getBoundingClientRect();
+      tooltip.style.left = (e.clientX - r.left + 14) + 'px';
+      tooltip.style.top = (e.clientY - r.top - 12) + 'px';
+    });
+    el.addEventListener('mouseleave', ()=>{ tooltip.style.opacity = 0; });
+  });
+
+  // Side panel: nationwide summary + callout rows for the three small federal territories
+  const totalStatesGreen = STATES.filter(st=>stateStats(st.id).total && stateStats(st.id).completed===stateStats(st.id).total).length;
+  const totalStatesActive = STATES.filter(st=>OUTLETS.some(o=>o.stateId===st.id && o.completedVisits>0)).length;
+
+  const ftRows = SMALL_TERRITORIES.map(sid=>{
+    const st = STATES.find(s=>s.id===sid);
+    const {total, completed, pct} = stateStats(sid);
+    const isActive = filters.state===sid;
+    return `<div class="ft-row ${isActive?'active-row':''}" data-state="${sid}">
+      <span class="ft-dot" style="background:${stateFillFor(pct)}"></span>
+      <span class="ftn">${st.name}</span>
+      <span class="ftp" style="color:${stateFillFor(pct)}">${pct}%</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('map-side').innerHTML = `
+    <div class="mini-stat"><div class="n" style="color:var(--green)">${totalStatesGreen}</div><div class="l">States fully completed</div></div>
+    <div class="mini-stat"><div class="n" style="color:var(--amber)">${16-totalStatesGreen}</div><div class="l">States still in progress</div></div>
+    <div class="mini-stat"><div class="n" style="color:var(--blue-600)">${totalStatesActive}</div><div class="l">States with active visits</div></div>
+    <div class="ft-callout-title">Federal territories</div>
+    ${ftRows}
+  `;
+  document.querySelectorAll('.ft-row').forEach(row=>{
+    row.addEventListener('click', ()=> selectStateFilter(row.getAttribute('data-state')));
+  });
+}
+
+/* =========================================================================
+   RENDER: PROGRESS BY STATE
+   ========================================================================= */
+function renderStateProgress(){
+  const rows = STATES.map(st=>{
+    const outs = OUTLETS.filter(o=>o.stateId===st.id);
+    const totalVisits = outs.reduce((sum,o)=>sum+o.targetVisits,0);
+    const completed = outs.reduce((sum,o)=>sum+o.completedVisits,0);
+    const pct = totalVisits ? Math.round((completed/totalVisits)*100) : 0;
+    return {st, total:outs.length, completed, remaining:totalVisits-completed, pct};
+  }).sort((a,b)=>{
+    const av = stateSortKey==='name' ? a.st.name : a[stateSortKey];
+    const bv = stateSortKey==='name' ? b.st.name : b[stateSortKey];
+    const result = stateSortKey==='name'
+      ? av.localeCompare(bv, 'en', {sensitivity:'base'})
+      : av-bv;
+    return stateSortDir==='asc' ? result : -result;
+  });
+
+  const sortLabels = {
+    name:'state name',
+    pct:'completion',
+    total:'outlet count',
+    completed:'completed visits',
+    remaining:'visits left'
+  };
+  document.getElementById('state-sort-description').textContent =
+    `Sorted by ${sortLabels[stateSortKey]} ${stateSortDir==='asc'?'ascending':'descending'} · Scroll to view all 16`;
+  document.querySelectorAll('.state-sort').forEach(header=>{
+    const isActive = header.dataset.stateSort===stateSortKey;
+    header.classList.toggle('active', isActive);
+    header.setAttribute('aria-sort', isActive ? (stateSortDir==='asc'?'ascending':'descending') : 'none');
+    header.querySelector('.state-sort-indicator').className =
+      `ph ${isActive ? (stateSortDir==='asc'?'ph-caret-up':'ph-caret-down') : 'ph-caret-up-down'} state-sort-indicator`;
+  });
+
+  document.getElementById('state-progress-list').innerHTML = rows.map(r=>{
+    const barColor = r.pct>=90 ? 'var(--green)' : (r.pct>=50 ? '#E8A33D' : '#E2793A');
+    const isActive = filters.state===r.st.id;
+    return `<div class="state-row ${isActive?'active-row':''}" data-state="${r.st.id}">
+      <span class="sname">${r.st.name}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${r.pct}%;background:${barColor}"></span></span>
+      <span class="num">${r.total}</span>
+      <span class="num">${r.completed}</span>
+      <span class="num">${r.remaining}</span>
+      <span class="pctnum" style="color:${barColor}">${r.pct}%</span>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('.state-row').forEach(row=>{
+    row.addEventListener('click', ()=>{
+      const sid = row.getAttribute('data-state');
+      filters.state = (filters.state===sid) ? 'all' : sid;
+      filters.outlet = 'all';
+      document.getElementById('f-state').value = filters.state;
+      window.__refreshOutletOptions();
+      currentPage = 1;
+      renderAll();
+    });
+  });
+}
+
+/* =========================================================================
+   RENDER: TIMELINE (custom SVG bar+line chart)
+   ========================================================================= */
+function renderTimeline(filtered){
+  const data = buildTimelineData(filtered);
+  const svg = document.getElementById('timelineChart');
+  const W = 1180, H = 230, padL = 40, padR = 20, padT = 16, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const maxVal = Math.max(1, ...data.map(d=>d.planned));
+  const bw = plotW/data.length;
+
+  let bars = '', gridlines = '', axisLabels = '';
+  for(let g=0; g<=4; g++){
+    const y = padT + plotH - (g/4)*plotH;
+    gridlines += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#EEF1F5" stroke-width="1"/>`;
+    axisLabels += `<text x="${padL-8}" y="${y+3}" font-size="9.5" fill="#8A93A3" text-anchor="end" font-family="IBM Plex Mono, monospace">${Math.round(maxVal*g/4)}</text>`;
+  }
+
+  data.forEach((d,i)=>{
+    const x = padL + i*bw + bw*0.18;
+    const w = bw*0.64;
+    const plannedH = (d.planned/maxVal)*plotH;
+    const completedH = (d.completed/maxVal)*plotH;
+    const remaining = Math.max(0, d.planned-d.completed);
+    const remH = (remaining/maxVal)*plotH;
+    const yBase = padT+plotH;
+    // planned track (background)
+    bars += `<rect x="${x}" y="${yBase-plannedH}" width="${w}" height="${plannedH}" rx="4" fill="#E9ECF1"/>`;
+    // completed
+    bars += `<rect x="${x}" y="${yBase-completedH}" width="${w}" height="${completedH}" rx="4" fill="#1B4F91" data-tip="${d.month} 2026 — Completed: ${d.completed} · Planned: ${d.planned} · Remaining: ${remaining}"/>`;
+    // remaining marker (thin amber cap)
+    if(remaining>0){
+      bars += `<rect x="${x}" y="${yBase-plannedH}" width="${w}" height="4" rx="2" fill="#D97706"/>`;
+    }
+    axisLabels += `<text x="${x+w/2}" y="${H-8}" font-size="10.5" fill="#5B6472" text-anchor="middle" font-family="Inter, sans-serif">${d.month}</text>`;
+  });
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = gridlines + axisLabels + bars;
+
+  const tooltip = document.getElementById('tl-tooltip');
+  svg.querySelectorAll('rect[data-tip]').forEach(r=>{
+    r.addEventListener('mousemove', (e)=>{
+      tooltip.textContent = r.getAttribute('data-tip');
+      tooltip.style.opacity = 1;
+      const holderRect = svg.parentElement.getBoundingClientRect();
+      tooltip.style.left = (e.clientX - holderRect.left + 12) + 'px';
+      tooltip.style.top = (e.clientY - holderRect.top - 10) + 'px';
+    });
+    r.addEventListener('mouseleave', ()=>{ tooltip.style.opacity=0; });
+  });
+}
+
+/* =========================================================================
+   RENDER: OUTLET TABLE
+   ========================================================================= */
+let searchTerm = '';
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, ch=>({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[ch]));
+}
+function renderTable(filtered){
+  let rows = [...filtered];
+  if(searchTerm){
+    const t = searchTerm.toLowerCase();
+    rows = rows.filter(o=> o.name.toLowerCase().includes(t) || o.address.toLowerCase().includes(t) || o.state.toLowerCase().includes(t));
+  }
+  rows.sort((a,b)=>{
+    let av=a[sortKey], bv=b[sortKey];
+    if(sortKey==='pct'){ av=a.pct; bv=b.pct; }
+    if(typeof av === 'string'){ av=av.toLowerCase(); bv=bv.toLowerCase(); }
+    if(av<bv) return sortDir==='asc'? -1:1;
+    if(av>bv) return sortDir==='asc'? 1:-1;
+    return 0;
+  });
+
+  document.getElementById('table-count').textContent = `${rows.length} outlet${rows.length!==1?'s':''} found`;
+
+  const totalPages = Math.max(1, Math.ceil(rows.length/PAGE_SIZE));
+  if(currentPage>totalPages) currentPage = totalPages;
+  const pageRows = rows.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+
+  document.getElementById('table-empty').style.display = rows.length? 'none':'block';
+
+  document.getElementById('outlet-tbody').innerHTML = pageRows.map(o=>{
+    const badgeClass = o.status==='Completed' ? 'badge-completed' : 'badge-inprogress';
+    const barColor = o.status==='Completed' ? 'var(--green)' : '#E8A33D';
+    const dateFmt = new Date(o.date+'T00:00:00').toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+    return `<tr>
+      <td style="font-weight:600;">${escapeHtml(o.name)}</td>
+      <td class="address-cell">${escapeHtml(o.address)}</td>
+      <td>${escapeHtml(o.state)}</td>
+      <td>${dateFmt}</td>
+      <td><span class="badge ${badgeClass}"><span class="badge-dot"></span>${o.status}</span></td>
+      <td><b>${o.completedVisits}/${o.targetVisits}</b></td>
+      <td><span class="mini-bar-track"><span class="mini-bar-fill" style="width:${o.pct}%;background:${barColor}"></span></span>${o.pct}%</td>
+      <td>${o.evidence ? `<span class="evd-yes">${ICONS.check} ${o.completedVisits}/5 uploaded</span>` : `<span class="evd-no"><i class="ph ph-clock"></i>Pending</span>`}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('pg-info').textContent = rows.length ? `Page ${currentPage} of ${totalPages}` : '';
+  document.getElementById('pg-prev').disabled = currentPage<=1;
+  document.getElementById('pg-next').disabled = currentPage>=totalPages;
+
+  document.querySelectorAll('.outlet-table thead th').forEach(th=>{
+    const isSorted = th.getAttribute('data-key')===sortKey;
+    th.classList.toggle('sorted', isSorted);
+    th.querySelector('.arrow').className =
+      `ph ${isSorted ? (sortDir==='asc'?'ph-caret-up':'ph-caret-down') : 'ph-caret-up-down'} arrow`;
+  });
+}
+
+/* =========================================================================
+   RENDER: ACTIVITIES
+   ========================================================================= */
+function timeAgo(d, now){
+  const diffMs = now - d;
+  const h = Math.floor(diffMs/3600000);
+  if(h < 1) return 'Just now';
+  if(h < 24) return `${h}h ago`;
+  const days = Math.floor(h/24);
+  return `${days}d ago`;
+}
+function renderActivities(){
+  const now = new Date('2026-07-23T09:14:00');
+  const colorMap = {green:['var(--green)','var(--green-bg)'], blue:['var(--blue-600)','var(--blue-50)'], amber:['var(--amber)','var(--amber-bg)']};
+  const scoped = filters.state==='all' ? ACTIVITIES : ACTIVITIES.filter(a=>a.stateId===filters.state);
+  const list = scoped.slice(0,10);
+  document.getElementById('activity-list').innerHTML = list.length ? list.map(a=>{
+    const [fg,bg] = colorMap[a.type.color];
+    return `<div class="activity-item">
+      <div class="act-icon" style="background:${bg};color:${fg}">${ICONS[a.type.icon]}</div>
+      <div class="act-body">
+        <div class="act-title">${a.type.label} — <b>${a.outlet}</b></div>
+        <div class="act-meta">${a.state}</div>
+      </div>
+      <div class="act-time">${timeAgo(a.time, now)}</div>
+    </div>`;
+  }).join('') : `<div class="empty-state"><p>No recent activity for this state.</p></div>`;
+}
+
+/* =========================================================================
+   MASTER RENDER
+   ========================================================================= */
+function renderAll(){
+  const filtered = applyFilters(OUTLETS);
+  renderKPIs(filtered);
+  renderMap();
+  renderStateProgress();
+  renderTable(filtered);
+  renderActivities();
+  renderActiveChips();
+}
+
+function renderActiveChips(){
+  // (Optional lightweight indicator embedded in filter bar reset button area)
+  const btn = document.getElementById('reset-filters');
+  const activeCount = [filters.state!=='all', filters.outlet!=='all', filters.status!=='all', filters.dateFrom, filters.dateTo].filter(Boolean).length;
+  btn.innerHTML = `<i class="ph ph-arrows-counter-clockwise"></i><span>${activeCount ? `Reset filters (${activeCount} active)` : 'Reset filters'}</span>`;
+}
+
+/* Table interactions */
+document.getElementById('table-search').addEventListener('input', (e)=>{
+  searchTerm = e.target.value; currentPage = 1; renderTable(applyFilters(OUTLETS));
+});
+document.querySelectorAll('.outlet-table thead th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.getAttribute('data-key');
+    if(sortKey===key){ sortDir = sortDir==='asc' ? 'desc' : 'asc'; }
+    else { sortKey = key; sortDir = 'asc'; }
+    renderTable(applyFilters(OUTLETS));
+  });
+});
+function changeStateSort(header){
+  const key = header.dataset.stateSort;
+  if(stateSortKey===key) stateSortDir = stateSortDir==='asc' ? 'desc' : 'asc';
+  else {
+    stateSortKey = key;
+    stateSortDir = 'asc';
+  }
+  renderStateProgress();
+}
+document.querySelectorAll('.state-sort').forEach(header=>{
+  header.addEventListener('click', ()=>changeStateSort(header));
+  header.addEventListener('keydown', e=>{
+    if(e.key==='Enter' || e.key===' '){
+      e.preventDefault();
+      changeStateSort(header);
+    }
+  });
+});
+document.getElementById('pg-prev').addEventListener('click', ()=>{ currentPage=Math.max(1,currentPage-1); renderTable(applyFilters(OUTLETS)); });
+document.getElementById('pg-next').addEventListener('click', ()=>{ currentPage++; renderTable(applyFilters(OUTLETS)); });
+
+/* Light / dark appearance */
+const themeToggle = document.getElementById('theme-toggle');
+function applyTheme(theme, persist=true){
+  const isDark = theme === 'dark';
+  document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+  themeToggle.innerHTML = `<i class="ph ${isDark ? 'ph-sun' : 'ph-moon'}"></i>`;
+  themeToggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+  themeToggle.setAttribute('aria-pressed', String(isDark));
+  themeToggle.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+  if(persist){
+    try{ localStorage.setItem('perkeso-theme', isDark ? 'dark' : 'light'); }catch(e){}
+  }
+}
+applyTheme(document.documentElement.dataset.theme || 'light', false);
+themeToggle.addEventListener('click', ()=>{
+  applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+});
+
+/* Init */
+renderFilterOptions();
+renderAll();
+</script>
+</body>
+</html>
